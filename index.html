@@ -32,7 +32,7 @@
          <div id="auth-error" class="hidden text-center p-4">
              <p class="text-lg font-semibold text-red-600">การเชื่อมต่อล้มเหลว</p>
              <p class="text-sm text-gray-500 mt-2">กรุณาตรวจสอบการตั้งค่า Firebase และการเชื่อมต่ออินเทอร์เน็ต</p>
-             <div id="auth-error-message" class="text-xs text-left bg-gray-100 p-2 rounded-md block mt-1 max-w-sm mx-auto"></div>
+             <div id="auth-error-message" class="text-xs text-left bg-gray-100 p-2 rounded-md block mt-1 max-w-lg mx-auto"></div>
         </div>
     </div>
 
@@ -77,7 +77,7 @@
         // --- Firebase SDK Imports ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // ===================================================================================
         // Firebase Configuration - YOUR KEY IS NOW INCLUDED
@@ -112,7 +112,7 @@
             
             init: function() {
                 ['appointmentForm', 'budgetItemForm', 'inspectionForm', 'noteForm'].forEach(id => document.getElementById(id).addEventListener('submit', e => this.handleFormSubmit(e, id)));
-                if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("...")) { this.showError("Firebase configuration is invalid."); return; }
+                if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("...")) { this.showError("กรุณากรอก Firebase configuration ในไฟล์ HTML ก่อน"); return; }
                 
                 this.loadingTimeout = setTimeout(() => {
                     this.showError("การเชื่อมต่อหมดเวลา (Timeout)");
