@@ -48,11 +48,17 @@
 
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center transition-opacity duration-300">
-        <svg class="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <p class="mt-4 text-lg text-gray-600">กำลังเชื่อมต่อข้อมูล...</p>
+        <div id="loading-spinner" class="text-center">
+            <svg class="animate-spin h-10 w-10 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="mt-4 text-lg text-gray-600">กำลังเชื่อมต่อข้อมูล...</p>
+        </div>
+        <div id="auth-error" class="hidden text-center">
+             <p class="text-lg text-red-600">การยืนยันตัวตนล้มเหลว</p>
+             <button onclick="window.retrySignIn()" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">ลองอีกครั้ง</button>
+        </div>
     </div>
 
     <div class="container mx-auto max-w-4xl p-4">
@@ -888,6 +894,28 @@
             });
         }
         
+        async function retrySignIn() {
+            const spinner = document.getElementById('loading-spinner');
+            const errorDiv = document.getElementById('auth-error');
+            
+            spinner.style.display = 'block';
+            errorDiv.classList.add('hidden');
+
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                // onAuthStateChanged will detect the new user state and proceed
+            } catch (error) {
+                console.error("Authentication failed on retry:", error);
+                spinner.style.display = 'none';
+                errorDiv.classList.remove('hidden');
+            }
+        }
+        window.retrySignIn = retrySignIn;
+        
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 userId = user.uid;
@@ -895,16 +923,7 @@
                 setupFirestoreListener();
             } else {
                 // Not signed in, handle sign-in process
-                try {
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                } catch (error) {
-                    console.error("Authentication failed:", error);
-                    document.getElementById('loading-overlay').innerText = "การยืนยันตัวตนล้มเหลว โปรดรีเฟรชหน้าจอ";
-                }
+                await retrySignIn();
             }
         });
     </script>
