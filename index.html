@@ -56,7 +56,7 @@
             <p class="mt-4 text-lg text-gray-600">กำลังเชื่อมต่อข้อมูล...</p>
         </div>
         <div id="auth-error" class="hidden text-center">
-             <p class="text-lg text-red-600">การยืนยันตัวตนล้มเหลว</p>
+             <p class="text-lg text-red-600">การเชื่อมต่อล้มเหลว</p>
              <p class="text-sm text-gray-500 mt-2">รายละเอียด:</p>
              <code id="auth-error-message" class="text-xs text-left bg-gray-100 p-2 rounded-md block mt-1 max-w-sm mx-auto"></code>
              <button onclick="window.retrySignIn()" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">ลองอีกครั้ง</button>
@@ -199,7 +199,6 @@
         let chartInstances = {};
         let AppState = {};
         let unsubscribe;
-        let isOnlineMode = false;
         let dataRef;
         let app, auth, db;
 
@@ -255,7 +254,7 @@
             };
         };
 
-        const _saveStateToFirebase_debounced = debounce(async () => {
+        const saveState = debounce(async () => {
             if (dataRef) {
                 try {
                     await setDoc(dataRef, AppState, { merge: true });
@@ -265,18 +264,6 @@
             }
         }, 1000);
         
-        const saveState = () => {
-            if (isOnlineMode) {
-                _saveStateToFirebase_debounced();
-            } else {
-                localStorage.setItem('homeManagerAppState_offline_v1', JSON.stringify(AppState));
-            }
-            // Re-render current tab to reflect changes immediately in UI for some components
-            if (['summary'].includes(currentTab)) {
-                 renderContentForTab(currentTab);
-            }
-        };
-
         // --- HELPER FUNCTIONS ---
         const formatCurrency = (num) => (num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const getThaiDate = (dateString) => new Date(dateString).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric'});
@@ -637,20 +624,30 @@
             renderContentForTab(tabId);
         };
         
-        window.updateBankInfo = (key, value) => { AppState.bankInfo[key] = parseFloat(value) || 0; saveState(); };
-        window.updateProjectInfo = (key, value) => { AppState.projectInfo[key] = parseFloat(value) || 0; saveState(); };
-        window.updateSummaryInfo = (key, value) => { AppState.summaryInfo[key] = parseFloat(value) || 0; saveState(); };
+        function updateAndSave(updateFn) {
+            updateFn();
+            saveState();
+            // Certain actions require a re-render of the current tab
+            const reRenderTabs = ['homeInspection', 'activity', 'summary', ...Object.keys(TAB_CONFIG).filter(k => TAB_CONFIG[k].type === 'budget')];
+            if (reRenderTabs.includes(currentTab)) {
+                renderContentForTab(currentTab);
+            }
+        }
+
+        window.updateBankInfo = (key, value) => updateAndSave(() => AppState.bankInfo[key] = parseFloat(value) || 0);
+        window.updateProjectInfo = (key, value) => updateAndSave(() => AppState.projectInfo[key] = parseFloat(value) || 0);
+        window.updateSummaryInfo = (key, value) => updateAndSave(() => AppState.summaryInfo[key] = parseFloat(value) || 0);
 
         window.openInspectionModal = () => { document.getElementById('inspectionForm').reset(); window.openModal('inspectionModal'); };
         document.getElementById('inspectionForm').addEventListener('submit', e => {
             e.preventDefault();
-            if(!AppState.homeInspections) AppState.homeInspections = [];
-            AppState.homeInspections.push({ id: `insp_${Date.now()}`, round: document.getElementById('inspectionRound').value, details: document.getElementById('inspectionDetails').value });
-            saveState();
+            updateAndSave(() => {
+                if(!AppState.homeInspections) AppState.homeInspections = [];
+                AppState.homeInspections.push({ id: `insp_${Date.now()}`, round: document.getElementById('inspectionRound').value, details: document.getElementById('inspectionDetails').value });
+            });
             window.closeModal('inspectionModal');
-            renderContentForTab('homeInspection');
         });
-        window.deleteInspection = (id) => { AppState.homeInspections = AppState.homeInspections.filter(i => i.id !== id); saveState(); renderContentForTab('homeInspection');};
+        window.deleteInspection = (id) => updateAndSave(() => AppState.homeInspections = AppState.homeInspections.filter(i => i.id !== id));
         
         window.openBudgetItemModal = (category, list, itemId = null) => {
             currentModal = { category, list, itemId };
@@ -676,28 +673,28 @@
             const { category, list } = currentModal;
             const id = document.getElementById('budgetItemId').value;
             const itemData = { name: document.getElementById('budgetItemName').value, price: parseFloat(document.getElementById('budgetItemCost').value) };
-
-            if(id) {
-                const itemIndex = AppState.budgets[category][list].findIndex(i => i.id === id);
-                if(itemIndex > -1) AppState.budgets[category][list][itemIndex] = { ...AppState.budgets[category][list][itemIndex], ...itemData };
-            } else {
-                AppState.budgets[category][list].push({ id: `item_${Date.now()}`, ...itemData });
-            }
-            saveState();
+            
+            updateAndSave(() => {
+                if(id) {
+                    const itemIndex = AppState.budgets[category][list].findIndex(i => i.id === id);
+                    if(itemIndex > -1) AppState.budgets[category][list][itemIndex] = { ...AppState.budgets[category][list][itemIndex], ...itemData };
+                } else {
+                    AppState.budgets[category][list].push({ id: `item_${Date.now()}`, ...itemData });
+                }
+            });
             window.closeModal('budgetItemModal');
-            renderContentForTab(category);
         });
         
-        window.deleteBudgetItem = (category, list, itemId) => { AppState.budgets[category][list] = AppState.budgets[category][list].filter(i => i.id !== itemId); saveState(); renderContentForTab(category);};
+        window.deleteBudgetItem = (category, list, itemId) => updateAndSave(() => AppState.budgets[category][list] = AppState.budgets[category][list].filter(i => i.id !== itemId));
         window.moveBudgetItem = (category, itemId) => {
-            const itemIndex = AppState.budgets[category].wishlist.findIndex(i => i.id === itemId);
-            if(itemIndex > -1) {
-                const [item] = AppState.budgets[category].wishlist.splice(itemIndex, 1);
-                if(!AppState.budgets[category].purchased) AppState.budgets[category].purchased = [];
-                AppState.budgets[category].purchased.push(item);
-                saveState();
-                renderContentForTab(category);
-            }
+            updateAndSave(() => {
+                const itemIndex = AppState.budgets[category].wishlist.findIndex(i => i.id === itemId);
+                if(itemIndex > -1) {
+                    const [item] = AppState.budgets[category].wishlist.splice(itemIndex, 1);
+                    if(!AppState.budgets[category].purchased) AppState.budgets[category].purchased = [];
+                    AppState.budgets[category].purchased.push(item);
+                }
+            });
         };
 
         window.openAppointmentModal = (sourceTab, appointmentId = null) => {
@@ -720,19 +717,20 @@
             e.preventDefault();
             const id = document.getElementById('appointmentId').value;
             const apptData = { title: document.getElementById('appointmentTitle').value, date: document.getElementById('appointmentDate').value, time: document.getElementById('appointmentTime').value, sourceTab: currentModal.sourceTab };
-            if(!AppState.appointments) AppState.appointments = [];
-            if (id) {
-                const apptIndex = AppState.appointments.findIndex(a => a.id === id);
-                if (apptIndex > -1) AppState.appointments[apptIndex] = { ...AppState.appointments[apptIndex], ...apptData };
-            } else {
-                AppState.appointments.push({ ...apptData, id: `appt_${Date.now()}` });
-            }
-            saveState(); 
+            
+            updateAndSave(() => {
+                if(!AppState.appointments) AppState.appointments = [];
+                if (id) {
+                    const apptIndex = AppState.appointments.findIndex(a => a.id === id);
+                    if (apptIndex > -1) AppState.appointments[apptIndex] = { ...AppState.appointments[apptIndex], ...apptData };
+                } else {
+                    AppState.appointments.push({ ...apptData, id: `appt_${Date.now()}` });
+                }
+            });
             window.closeModal('appointmentModal');
-            renderContentForTab(currentTab);
         });
 
-        window.deleteAppointment = (id) => { AppState.appointments = AppState.appointments.filter(a => a.id !== id); saveState(); renderContentForTab(currentTab); };
+        window.deleteAppointment = (id) => updateAndSave(() => AppState.appointments = AppState.appointments.filter(a => a.id !== id));
         
         window.openNoteModal = (sourceTab, noteId = null) => {
             currentModal = { sourceTab, itemId: noteId };
@@ -753,19 +751,20 @@
             const id = document.getElementById('noteId').value;
             const { sourceTab } = currentModal;
             const noteData = { text: document.getElementById('noteText').value };
-            if(!AppState.notes[sourceTab]) AppState.notes[sourceTab] = [];
-            if (id) {
-                 const noteIndex = AppState.notes[sourceTab].findIndex(n => n.id === id);
-                 if (noteIndex > -1) AppState.notes[sourceTab][noteIndex] = { ...AppState.notes[sourceTab][noteIndex], ...noteData };
-            } else {
-                 AppState.notes[sourceTab].push({ ...noteData, id: `note_${Date.now()}` });
-            }
-            saveState(); 
+
+            updateAndSave(() => {
+                if(!AppState.notes[sourceTab]) AppState.notes[sourceTab] = [];
+                if (id) {
+                     const noteIndex = AppState.notes[sourceTab].findIndex(n => n.id === id);
+                     if (noteIndex > -1) AppState.notes[sourceTab][noteIndex] = { ...AppState.notes[sourceTab][noteIndex], ...noteData };
+                } else {
+                     AppState.notes[sourceTab].push({ ...noteData, id: `note_${Date.now()}` });
+                }
+            });
             window.closeModal('noteModal');
-            renderContentForTab(sourceTab);
         });
 
-        window.deleteNote = (sourceTab, noteId) => { AppState.notes[sourceTab] = AppState.notes[sourceTab].filter(n => n.id !== noteId); saveState(); renderContentForTab(sourceTab); };
+        window.deleteNote = (sourceTab, noteId) => updateAndSave(() => AppState.notes[sourceTab] = AppState.notes[sourceTab].filter(n => n.id !== noteId));
         
         window.openModal = (modalId) => {
             const modal = document.getElementById(modalId);
@@ -787,32 +786,13 @@
         };
 
         // --- INITIALIZATION ---
-        function initializeOfflineMode() {
-            isOnlineMode = false;
-            userIdDisplay.innerHTML = '<i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i> โหมดออฟไลน์: ข้อมูลถูกบันทึกในเครื่องนี้เท่านั้น';
-            const savedState = localStorage.getItem('homeManagerAppState_offline_v1');
-            AppState = savedState ? JSON.parse(savedState) : getInitialData();
-            
-            // Ensure data structure is up to date
-            const initialKeys = Object.keys(getInitialData());
-            for (const key of initialKeys) {
-                if (typeof AppState[key] === 'undefined') {
-                    AppState[key] = getInitialData()[key];
-                }
-            }
-
-            hideLoadingOverlay();
-            renderContentForTab('activity');
-        }
-
         function setupFirestoreListener(userId) {
             if (unsubscribe) unsubscribe();
             
             dataRef = doc(db, `artifacts/${appId}/users/${userId}/data/homeData`);
 
             unsubscribe = onSnapshot(dataRef, (doc) => {
-                isOnlineMode = true;
-                userIdDisplay.innerText = `โหมดออนไลน์ | User ID: ${userId}`;
+                userIdDisplay.innerText = `User ID: ${userId}`;
 
                 if (doc.exists()) {
                     AppState = doc.data();
@@ -843,34 +823,33 @@
             loadingSpinner.style.display = 'block';
             authErrorDiv.classList.add('hidden');
 
-            try {
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        setupFirestoreListener(user.uid);
-                    } else {
-                        try {
-                             if (initialAuthToken) {
-                                await signInWithCustomToken(auth, initialAuthToken);
-                            } else {
-                                await signInAnonymously(auth);
-                            }
-                        } catch (authError) {
-                            console.error("Authentication failed:", authError);
-                            initializeOfflineMode(); // Fallback to offline if sign-in fails
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    setupFirestoreListener(user.uid);
+                } else {
+                    try {
+                         if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
                         }
+                    } catch (authError) {
+                        console.error("Authentication failed:", authError);
+                        authErrorMessage.textContent = authError.message;
+                        loadingSpinner.style.display = 'none';
+                        authErrorDiv.classList.remove('hidden');
                     }
-                });
-            } catch (e) {
-                console.error("Firebase initialization failed:", e);
-                initializeOfflineMode();
-            }
+                }
+            });
         }
         window.retrySignIn = startAuthProcess;
 
         function initializeAppAndAuth() {
             if (!firebaseConfigStr || firebaseConfigStr.length < 20) {
-                console.warn("Firebase config not found. Starting in offline mode.");
-                initializeOfflineMode();
+                console.warn("Firebase config not found. Cannot start online mode.");
+                authErrorMessage.textContent = "Firebase configuration is missing or invalid. Cannot initialize the application.";
+                loadingSpinner.style.display = 'none';
+                authErrorDiv.classList.remove('hidden');
                 return;
             }
 
@@ -879,10 +858,12 @@
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
-                startAuthProcess(); // Start the auth process after initialization
+                startAuthProcess();
             } catch (e) {
                 console.error("Firebase initialization failed:", e);
-                initializeOfflineMode();
+                authErrorMessage.textContent = `Firebase initialization failed: ${e.message}`;
+                loadingSpinner.style.display = 'none';
+                authErrorDiv.classList.remove('hidden');
             }
         }
 
