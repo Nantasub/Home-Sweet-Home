@@ -32,7 +32,7 @@
          <div id="auth-error" class="hidden text-center p-4">
              <p class="text-lg font-semibold text-red-600">การเชื่อมต่อล้มเหลว</p>
              <p class="text-sm text-gray-500 mt-2">กรุณาตรวจสอบการตั้งค่า Firebase และการเชื่อมต่ออินเทอร์เน็ต</p>
-             <code id="auth-error-message" class="text-xs text-left bg-gray-100 p-2 rounded-md block mt-1 max-w-sm mx-auto"></code>
+             <div id="auth-error-message" class="text-xs text-left bg-gray-100 p-2 rounded-md block mt-1 max-w-sm mx-auto"></div>
         </div>
     </div>
 
@@ -79,14 +79,18 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-       const firebaseConfig = {
-  apiKey: "AIzaSyBvpVOneaHb8pZUAYrHI6D3PLpURMEW-IQ",
-  authDomain: "home-sweet-home-7afb2.firebaseapp.com",
-  projectId: "home-sweet-home-7afb2",
-  storageBucket: "home-sweet-home-7afb2.firebasestorage.app",
-  messagingSenderId: "716595539819",
-  appId: "1:716595539819:web:770ae623d1d80ed26f262e"
-};
+        // ===================================================================================
+        // Firebase Configuration - YOUR KEY IS NOW INCLUDED
+        // ===================================================================================
+        const firebaseConfig = {
+          apiKey: "AIzaSyBvpVOneaHb8pZUAYrHI6D3PLpURMEW-IQ",
+          authDomain: "home-sweet-home-7afb2.firebaseapp.com",
+          projectId: "home-sweet-home-7afb2",
+          storageBucket: "home-sweet-home-7afb2.appspot.com",
+          messagingSenderId: "716595539819",
+          appId: "1:716595539819:web:770ae623d1d80ed26f262e"
+        };
+        // ===================================================================================
 
         const debounce = (func, delay) => { let timeout; return function(...args) { const context = this; clearTimeout(timeout); timeout = setTimeout(() => func.apply(context, args), delay); }; };
 
@@ -108,23 +112,55 @@
             
             init: function() {
                 ['appointmentForm', 'budgetItemForm', 'inspectionForm', 'noteForm'].forEach(id => document.getElementById(id).addEventListener('submit', e => this.handleFormSubmit(e, id)));
-                if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("...")) { this.showError("กรุณากรอก Firebase configuration ในไฟล์ HTML ก่อน"); return; }
+                if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("...")) { this.showError("Firebase configuration is invalid."); return; }
                 
                 this.loadingTimeout = setTimeout(() => {
                     this.showError("การเชื่อมต่อหมดเวลา (Timeout)");
-                }, 15000); // 15 second timeout
+                }, 15000);
 
                 try {
                     const app = initializeApp(firebaseConfig);
                     const auth = getAuth(app);
                     const db = getFirestore(app);
-                    onAuthStateChanged(auth, async (user) => { if (user) { this.setupFirestoreListener(db, user.uid); } else { await signInAnonymously(auth); } });
+                    onAuthStateChanged(auth, async (user) => { 
+                        if (user) { 
+                            this.setupFirestoreListener(db, user.uid); 
+                        } else { 
+                            try {
+                                await signInAnonymously(auth); 
+                            } catch (authError) {
+                                console.error("Anonymous sign-in failed:", authError);
+                                if (authError.code === 'auth/operation-not-allowed' || authError.code === 'auth/configuration-not-found') {
+                                    const projectId = firebaseConfig.projectId;
+                                    const authUrl = `https://console.firebase.google.com/project/${projectId}/authentication/providers`;
+                                    const guide = `
+                                        <div class='text-left text-sm p-2'>
+                                            <p class='font-bold'>ขั้นตอนสุดท้าย: เปิดใช้งาน Anonymous Sign-in</p>
+                                            <ol class='list-decimal list-inside mt-2 space-y-1'>
+                                                <li><a href="${authUrl}" target="_blank" class="text-blue-600 font-bold hover:underline">คลิกที่นี่</a> เพื่อไปที่หน้าตั้งค่า Authentication</li>
+                                                <li>ในหน้ารายการที่เปิดขึ้นมา ให้คลิกที่ 'Anonymous'</li>
+                                                <li>เปิดใช้งาน (Enable) แล้วกด 'Save'</li>
+                                                <li>กลับมาที่หน้านี้แล้วรีเฟรชอีกครั้ง</li>
+                                            </ol>
+                                        </div>
+                                    `;
+                                    this.showError(guide, true);
+                                } else {
+                                    this.showError(`Authentication failed: ${authError.message}`);
+                                }
+                            }
+                        } 
+                    });
                 } catch (e) { this.showError(`Firebase initialization failed: ${e.message}`); }
             },
 
-            showError: function(message) {
+            showError: function(message, isHtml = false) {
                 clearTimeout(this.loadingTimeout);
-                this.elements.authErrorMessage.textContent = message;
+                if (isHtml) {
+                    this.elements.authErrorMessage.innerHTML = message;
+                } else {
+                    this.elements.authErrorMessage.textContent = message;
+                }
                 this.elements.loadingSpinner.style.display = 'none';
                 this.elements.authErrorDiv.classList.remove('hidden');
             },
@@ -154,7 +190,6 @@
                 }
             },
 
-            // --- All other methods are here, condensed for brevity ---
             createActivityTemplate: function() { const sortedAppointments = [...(this.state.appointments || [])].sort((a,b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`)).filter(a => new Date(a.date) >= new Date(new Date().setDate(new Date().getDate() - 1))); const appointmentsHtml = sortedAppointments.length === 0 ? `<p class="text-center text-gray-500 py-4">ไม่มีนัดหมายเร็วๆ นี้</p>` : sortedAppointments.map(appt => `<div class="bg-gray-50 rounded-lg p-3 flex items-center space-x-4"><div class="flex-shrink-0 bg-blue-500 text-white rounded-md p-2 text-center w-16"><p class="text-xl font-bold">${new Date(appt.date).getDate()}</p><p class="text-xs">${new Date(appt.date).toLocaleDateString('th-TH', { month: 'short' })}</p></div><div><p class="font-semibold">${appt.title}</p><p class="text-sm text-gray-600">${this.getThaiDate(appt.date)} - ${appt.time}</p><p class="text-xs text-gray-400">จาก: ${this.TAB_CONFIG[appt.sourceTab]?.title}</p></div></div>`).join(''); return `<div class="space-y-6"><div class="bg-white rounded-xl shadow-md p-6"><h2 class="text-2xl font-semibold mb-4">นัดหมายที่จะถึง</h2><div class="space-y-3">${appointmentsHtml}</div></div><div class="bg-white rounded-xl shadow-md p-6"><h2 class="text-2xl font-semibold mb-4">ภาพรวมค่าใช้จ่าย</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center"><div><canvas id="activityChartPlanned"></canvas></div><div><canvas id="activityChartActual"></canvas></div></div></div></div>`; },
             calculateBudgets: function() { const result = { planned: {}, actual: {}, totalPlanned: 0, totalActual: 0, totalAvailable: (this.state.bankInfo?.loanDecor || 0) + (this.state.summaryInfo?.additionalBudget || 0), }; for (const cat in (this.state.budgets || {})) { result.planned[cat] = (this.state.budgets[cat].wishlist || []).reduce((sum, item) => sum + item.price, 0); result.actual[cat] = (this.state.budgets[cat].purchased || []).reduce((sum, item) => sum + item.price, 0); result.totalPlanned += result.planned[cat]; result.totalActual += result.actual[cat]; } return result; },
             createSummaryTemplate: function() { const budgetData = this.calculateBudgets(); return `<div class="bg-white rounded-xl shadow-md p-6 space-y-8"><div><h2 class="text-2xl font-semibold mb-4">สรุปงบประมาณ</h2><div class="grid grid-cols-1 sm:grid-cols-3 gap-4"><div class="bg-green-50 p-4 rounded-lg"><p class="form-label">งบเงินกู้ (ตกแต่ง)</p><p class="text-2xl font-bold text-green-700">${this.formatCurrency(this.state.bankInfo.loanDecor)}</p></div><div class="bg-green-50 p-4 rounded-lg"><label for="additionalBudget" class="form-label">งบเพิ่มเติม</label><input type="number" id="additionalBudget" onchange="window.App.updateSummaryInfo('additionalBudget', this.value)" class="form-input text-2xl font-bold text-green-700 bg-transparent border-0 p-0" value="${this.state.summaryInfo.additionalBudget || ''}" placeholder="0.00"></div><div class="bg-blue-100 p-4 rounded-lg"><p class="form-label">งบประมาณทั้งหมด</p><p class="text-2xl font-bold text-blue-700">${this.formatCurrency(budgetData.totalAvailable)}</p></div></div></div><hr/><div><h2 class="text-2xl font-semibold mb-4">สรุปค่าใช้จ่าย</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-8"><div class="space-y-3"><h3 class="text-lg font-semibold">งบที่คาดว่าจะใช้ (Wishlist)</h3><div class="bg-orange-50 p-4 rounded-lg flex justify-between items-center"><span class="font-bold">รวมทั้งหมด</span><span class="text-xl font-bold text-orange-700">${this.formatCurrency(budgetData.totalPlanned)}</span></div>${Object.keys(this.state.budgets).map(cat => `<div class="p-3 rounded-lg flex justify-between items-center bg-gray-50"><span>${this.TAB_CONFIG[cat].title}</span><span class="font-semibold">${this.formatCurrency(budgetData.planned[cat])}</span></div>`).join('')}</div><div class="space-y-3"><h3 class="text-lg font-semibold">งบที่ใช้ไปแล้ว (Purchased)</h3><div class="bg-red-50 p-4 rounded-lg flex justify-between items-center"><span class="font-bold">รวมทั้งหมด</span><span class="text-xl font-bold text-red-700">${this.formatCurrency(budgetData.totalActual)}</span></div>${Object.keys(this.state.budgets).map(cat => `<div class="p-3 rounded-lg flex justify-between items-center bg-gray-50"><span>${this.TAB_CONFIG[cat].title}</span><span class="font-semibold">${this.formatCurrency(budgetData.actual[cat])}</span></div>`).join('')}</div></div></div><hr/><div><h2 class="text-2xl font-semibold mb-4">กราฟสรุป</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center"><div><canvas id="summaryChartPlanned"></canvas></div><div><canvas id="summaryChartActual"></canvas></div></div></div></div>`; },
