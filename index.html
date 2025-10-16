@@ -31,7 +31,7 @@
         </div>
          <div id="auth-error" class="hidden text-center p-4">
              <p class="text-lg font-semibold text-red-600">การเชื่อมต่อล้มเหลว</p>
-             <p class="text-sm text-gray-500 mt-2">กรุณาตรวจสอบการตั้งค่า Firebase ในไฟล์ HTML</p>
+             <p class="text-sm text-gray-500 mt-2">กรุณาตรวจสอบการตั้งค่า Firebase และการเชื่อมต่ออินเทอร์เน็ต</p>
              <code id="auth-error-message" class="text-xs text-left bg-gray-100 p-2 rounded-md block mt-1 max-w-sm mx-auto"></code>
         </div>
     </div>
@@ -79,28 +79,19 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        // ===================================================================================
-        // ขั้นตอนสุดท้าย: กรุณาวาง "กุญแจ" Firebase ของคุณที่นี่
-        // ===================================================================================
-        // 1. ไปที่ https://console.firebase.google.com/ และสร้างโปรเจกต์ใหม่ (ฟรี)
-        // 2. ในหน้าโปรเจกต์ คลิกที่ไอคอนเว็บ </> (Add app > Web)
-        // 3. ตั้งชื่อแอป (อะไรก็ได้) แล้วกด Register app
-        // 4. คัดลอกโค้ด `firebaseConfig` ทั้งหมดมาวางแทนที่ `firebaseConfig` ตัวอย่างข้างล่างนี้
         const firebaseConfig = {
   apiKey: "AIzaSyBvpVOneaHb8pZUAYrHI6D3PLpURMEW-IQ",
   authDomain: "home-sweet-home-7afb2.firebaseapp.com",
   projectId: "home-sweet-home-7afb2",
   storageBucket: "home-sweet-home-7afb2.firebasestorage.app",
   messagingSenderId: "716595539819",
-  appId: "1:716595539819:web:770ae623d1d80ed26f262e"
+  appId: "1:716595539819:web:e5b88c1c670d8b0c6f262e"
 };        
-        // ===================================================================================
-
         const debounce = (func, delay) => { let timeout; return function(...args) { const context = this; clearTimeout(timeout); timeout = setTimeout(() => func.apply(context, args), delay); }; };
 
         const App = {
             state: {}, currentTab: 'activity', currentModal: {}, chartInstances: {},
-            dataRef: null, unsubscribe: null,
+            dataRef: null, unsubscribe: null, loadingTimeout: null,
 
             elements: { loadingOverlay: document.getElementById('loading-overlay'), loadingSpinner: document.getElementById('loading-spinner'), authErrorDiv: document.getElementById('auth-error'), authErrorMessage: document.getElementById('auth-error-message'), appStatus: document.getElementById('app-status'), mainContent: document.getElementById('mainContent'), },
             TAB_CONFIG: { 'activity': { title: 'ภาพรวม', type: 'activity' }, 'summary': { title: 'สรุปค่าใช้จ่าย', type: 'summary' }, 'builtin': { title: 'Built-in', type: 'budget' }, 'appliances': { title: 'เครื่องใช้ไฟฟ้า', type: 'budget' }, 'furniture': { title: 'เฟอร์นิเจอร์', type: 'budget' }, 'projectLegalities': { title: 'นิติกรรมโครงการ', type: 'project' }, 'bankLegalities': { title: 'นิติกรรมธนาคาร', type: 'bank' }, 'homeInspection': { title: 'ตรวจรับบ้าน', type: 'inspection' }, },
@@ -117,6 +108,11 @@
             init: function() {
                 ['appointmentForm', 'budgetItemForm', 'inspectionForm', 'noteForm'].forEach(id => document.getElementById(id).addEventListener('submit', e => this.handleFormSubmit(e, id)));
                 if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("...")) { this.showError("กรุณากรอก Firebase configuration ในไฟล์ HTML ก่อน"); return; }
+                
+                this.loadingTimeout = setTimeout(() => {
+                    this.showError("การเชื่อมต่อหมดเวลา (Timeout)");
+                }, 15000); // 15 second timeout
+
                 try {
                     const app = initializeApp(firebaseConfig);
                     const auth = getAuth(app);
@@ -126,12 +122,14 @@
             },
 
             showError: function(message) {
+                clearTimeout(this.loadingTimeout);
                 this.elements.authErrorMessage.textContent = message;
                 this.elements.loadingSpinner.style.display = 'none';
                 this.elements.authErrorDiv.classList.remove('hidden');
             },
             
             setupFirestoreListener: function(db, userId) {
+                clearTimeout(this.loadingTimeout);
                 if (this.unsubscribe) this.unsubscribe();
                 this.dataRef = doc(db, `homeData/${userId}`);
                 this.unsubscribe = onSnapshot(this.dataRef, (doc) => {
