@@ -39,14 +39,27 @@
         .form-label {
             @apply block text-sm font-medium text-gray-700;
         }
+        #loading-overlay {
+            z-index: 9999;
+        }
     </style>
 </head>
 <body class="text-gray-800">
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center transition-opacity duration-300">
+        <svg class="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="mt-4 text-lg text-gray-600">กำลังเชื่อมต่อข้อมูล...</p>
+    </div>
 
     <div class="container mx-auto max-w-4xl p-4">
         <!-- Header -->
         <header class="bg-white/70 backdrop-blur-sm rounded-xl shadow-md p-6 mb-6 text-center">
             <h1 class="text-4xl font-bold text-gray-700">Home Sweet Home</h1>
+            <p id="userIdDisplay" class="text-xs text-gray-400 mt-2 break-all"></p>
         </header>
 
         <!-- Tabs -->
@@ -161,7 +174,8 @@
         </div>
     </div>
 
-    <script>
+    <!-- Firebase SDK -->
+    <script type="module">
         // --- DATA & STATE MANAGEMENT ---
         let currentTab = 'activity';
         let currentModal = {
@@ -171,6 +185,28 @@
             sourceTab: null,
         };
         let chartInstances = {};
+        let AppState = {}; // Will be populated from Firebase
+        let unsubscribe; // To detach Firestore listener
+
+        // --- Firebase Setup ---
+        // These will be provided in the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "AIza...", authDomain: "...", projectId: "..." }; // Example config
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        let userId;
+        let dataRef;
 
         const TAB_CONFIG = {
             'activity': { title: 'ภาพรวม', type: 'activity' },
@@ -183,11 +219,9 @@
             'homeInspection': { title: 'ตรวจรับบ้าน', type: 'inspection' },
         };
 
-        const initialData = {
+        const getInitialData = () => ({
             appointments: [],
-            bankInfo: {
-                loanHouse: 0, loanDecor: 0, interest1: 0, interest2: 0, interest3: 0, interest4: 0, withInsurance: 0, monthlyPayment: 0,
-            },
+            bankInfo: { loanHouse: 0, loanDecor: 0, interest1: 0, interest2: 0, interest3: 0, interest4: 0, withInsurance: 0, monthlyPayment: 0 },
             projectInfo: { commonFee: 0 },
             summaryInfo: { additionalBudget: 0 },
             homeInspections: [],
@@ -197,81 +231,34 @@
                 furniture: { wishlist: [], purchased: [] },
             },
             notes: {
-                projectLegalities: [],
-                bankLegalities: [],
-                homeInspection: [],
+                builtin: [], appliances: [], furniture: [],
+                projectLegalities: [], bankLegalities: [], homeInspection: []
             },
             files: {
-                builtin: [],
-                appliances: [],
-                furniture: [],
-                projectLegalities: [],
-                bankLegalities: [],
-                homeInspection: [],
+                builtin: [], appliances: [], furniture: [],
+                projectLegalities: [], bankLegalities: [], homeInspection: []
             }
+        });
+
+        // Debounce function to limit Firestore writes
+        const debounce = (func, delay) => {
+            let timeout;
+            return function(...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), delay);
+            };
         };
 
-        let AppState = JSON.parse(localStorage.getItem('homeManagerAppState_v4')) || initialData;
-
-        const saveState = () => {
-            localStorage.setItem('homeManagerAppState_v4', JSON.stringify(AppState));
-        };
-        
-        // --- IndexedDB File Storage ---
-        const DB_NAME = 'HomeSweetHomeDB';
-        const DB_VERSION = 1;
-        const STORE_NAME = 'files';
-        let db;
-
-        function initDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
-                request.onerror = (event) => reject("IndexedDB error: " + request.errorCode);
-                request.onsuccess = (event) => {
-                    db = event.target.result;
-                    resolve(db);
-                };
-                request.onupgradeneeded = (event) => {
-                    const db = event.target.result;
-                    if (!db.objectStoreNames.contains(STORE_NAME)) {
-                        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-                    }
-                };
-            });
-        }
-
-        function saveFile(id, file) {
-            return new Promise((resolve, reject) => {
-                if (!db) return reject("Database not initialized.");
-                const transaction = db.transaction([STORE_NAME], 'readwrite');
-                const store = transaction.objectStore(STORE_NAME);
-                const request = store.put({ id: id, file: file });
-                request.onsuccess = () => resolve();
-                request.onerror = () => reject(request.error);
-            });
-        }
-
-        function getFile(id) {
-            return new Promise((resolve, reject) => {
-                 if (!db) return reject("Database not initialized.");
-                const transaction = db.transaction([STORE_NAME], 'readonly');
-                const store = transaction.objectStore(STORE_NAME);
-                const request = store.get(id);
-                request.onsuccess = () => resolve(request.result.file);
-                request.onerror = () => reject(request.error);
-            });
-        }
-
-        function deleteFile(id) {
-            return new Promise((resolve, reject) => {
-                 if (!db) return reject("Database not initialized.");
-                const transaction = db.transaction([STORE_NAME], 'readwrite');
-                const store = transaction.objectStore(STORE_NAME);
-                const request = store.delete(id);
-                request.onsuccess = () => resolve();
-                request.onerror = () => reject(request.error);
-            });
-        }
+        const saveStateToFirebase = debounce(async () => {
+            if (dataRef) {
+                try {
+                    await setDoc(dataRef, AppState, { merge: true });
+                } catch (error) {
+                    console.error("Error saving state to Firebase:", error);
+                }
+            }
+        }, 1000); // Save 1 second after the last change
 
         // --- HELPER FUNCTIONS ---
         const formatCurrency = (num) => (num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -281,6 +268,8 @@
         const mainContentEl = document.getElementById('mainContent');
 
         function renderContentForTab(tabId) {
+            if (!AppState.budgets) return; // Guard against rendering before data is loaded
+
             currentTab = tabId;
             const config = TAB_CONFIG[tabId];
             let content = '';
@@ -305,9 +294,9 @@
         }
 
         function createActivityTemplate() {
-            const sortedAppointments = [...AppState.appointments]
+            const sortedAppointments = [...(AppState.appointments || [])]
                 .sort((a,b) => new Date(a.date + 'T' + a.time) - new Date(b.date + 'T' + b.time))
-                .filter(a => new Date(a.date) >= new Date(new Date().setDate(new Date().getDate() - 1))); // Show today onwards
+                .filter(a => new Date(a.date) >= new Date(new Date().setDate(new Date().getDate() - 1)));
             
             const appointmentsHtml = sortedAppointments.length === 0
                 ? `<p class="text-center text-gray-500 py-4">ไม่มีนัดหมายเร็วๆ นี้</p>`
@@ -339,7 +328,7 @@
                     </div>
                 </div>`;
         }
-
+        
         function createSummaryTemplate() {
             const budgetData = calculateBudgets();
             
@@ -354,7 +343,7 @@
                             </div>
                             <div class="bg-green-50 p-4 rounded-lg">
                                 <label for="additionalBudget" class="form-label">งบเพิ่มเติม</label>
-                                <input type="number" id="additionalBudget" onchange="updateSummaryInfo('additionalBudget', this.value)" class="form-input text-2xl font-bold text-green-700 bg-transparent border-0 p-0" value="${AppState.summaryInfo.additionalBudget || ''}" placeholder="0.00">
+                                <input type="number" id="additionalBudget" onchange="window.updateSummaryInfo('additionalBudget', this.value)" class="form-input text-2xl font-bold text-green-700 bg-transparent border-0 p-0" value="${AppState.summaryInfo.additionalBudget || ''}" placeholder="0.00">
                             </div>
                             <div class="bg-blue-100 p-4 rounded-lg">
                                 <p class="form-label">งบประมาณทั้งหมด</p>
@@ -362,13 +351,10 @@
                             </div>
                         </div>
                     </div>
-                    
                     <hr/>
-
                     <div>
                         <h2 class="text-2xl font-semibold mb-4">สรุปค่าใช้จ่าย</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                           <!-- Planned Costs -->
                            <div class="space-y-3">
                                 <h3 class="text-lg font-semibold">งบที่คาดว่าจะใช้ (Wishlist)</h3>
                                 <div class="bg-orange-50 p-4 rounded-lg flex justify-between items-center">
@@ -379,10 +365,8 @@
                                 <div class="p-3 rounded-lg flex justify-between items-center bg-gray-50">
                                     <span>${TAB_CONFIG[cat].title}</span>
                                     <span class="font-semibold">${formatCurrency(budgetData.planned[cat])}</span>
-                                </div>
-                                `).join('')}
+                                </div>`).join('')}
                            </div>
-                           <!-- Actual Costs -->
                            <div class="space-y-3">
                                 <h3 class="text-lg font-semibold">งบที่ใช้ไปแล้ว (Purchased)</h3>
                                 <div class="bg-red-50 p-4 rounded-lg flex justify-between items-center">
@@ -393,14 +377,11 @@
                                 <div class="p-3 rounded-lg flex justify-between items-center bg-gray-50">
                                     <span>${TAB_CONFIG[cat].title}</span>
                                     <span class="font-semibold">${formatCurrency(budgetData.actual[cat])}</span>
-                                </div>
-                                `).join('')}
+                                </div>`).join('')}
                            </div>
                         </div>
                     </div>
-
                      <hr/>
-
                     <div>
                         <h2 class="text-2xl font-semibold mb-4">กราฟสรุป</h2>
                          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -410,11 +391,11 @@
                     </div>
                 </div>`;
         }
-        
+
         function createBudgetTemplate(category) {
             const data = AppState.budgets[category];
             const renderList = (listType, items) => {
-                if (items.length === 0) return `<div class="text-center text-gray-500 py-4 border rounded-lg">ไม่มีรายการ</div>`;
+                if (!items || items.length === 0) return `<div class="text-center text-gray-500 py-4 border rounded-lg">ไม่มีรายการ</div>`;
                 return items.map(item => `
                     <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                         <div>
@@ -422,9 +403,9 @@
                             <p class="text-sm text-gray-600">${formatCurrency(item.price)} บาท</p>
                         </div>
                         <div class="flex items-center space-x-2">
-                           ${listType === 'wishlist' ? `<button onclick="moveBudgetItem('${category}', ${item.id})" class="text-green-500 hover:text-green-700 p-2"><i class="fas fa-check"></i></button>` : ''}
-                           <button onclick="openBudgetItemModal('${category}', '${listType}', ${item.id})" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button>
-                           <button onclick="deleteBudgetItem('${category}', '${listType}', ${item.id})" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
+                           ${listType === 'wishlist' ? `<button onclick="window.moveBudgetItem('${category}', '${item.id}')" class="text-green-500 hover:text-green-700 p-2"><i class="fas fa-check"></i></button>` : ''}
+                           <button onclick="window.openBudgetItemModal('${category}', '${listType}', '${item.id}')" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button>
+                           <button onclick="window.deleteBudgetItem('${category}', '${listType}', '${item.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                 `).join('');
@@ -435,7 +416,7 @@
                     <div>
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xl font-semibold">รายการที่อยากได้ (Wishlist)</h3>
-                            <button onclick="openBudgetItemModal('${category}', 'wishlist')" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm font-semibold">+ เพิ่ม</button>
+                            <button onclick="window.openBudgetItemModal('${category}', 'wishlist')" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm font-semibold">+ เพิ่ม</button>
                         </div>
                         <div class="space-y-2">${renderList('wishlist', data.wishlist)}</div>
                     </div>
@@ -443,7 +424,7 @@
                     <div>
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xl font-semibold">รายการที่ซื้อแล้ว</h3>
-                            <button onclick="openBudgetItemModal('${category}', 'purchased')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 text-sm font-semibold">+ เพิ่ม</button>
+                            <button onclick="window.openBudgetItemModal('${category}', 'purchased')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 text-sm font-semibold">+ เพิ่ม</button>
                         </div>
                         <div class="space-y-2">${renderList('purchased', data.purchased)}</div>
                     </div>
@@ -453,7 +434,7 @@
         }
         
         function createInfoTemplate(tabId) {
-            const appointments = AppState.appointments.filter(a => a.sourceTab === tabId);
+            const appointments = (AppState.appointments || []).filter(a => a.sourceTab === tabId);
             const appointmentsHtml = appointments.length === 0
                 ? `<p class="text-gray-500 text-sm">ไม่มีนัดหมาย</p>`
                 : appointments.map(a => `
@@ -463,8 +444,8 @@
                             <p class="text-sm text-gray-600">${getThaiDate(a.date)} - ${a.time}</p>
                         </div>
                         <div class="flex items-center space-x-2">
-                           <button onclick="openAppointmentModal('${tabId}', ${a.id})" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button>
-                           <button onclick="deleteAppointment(${a.id})" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
+                           <button onclick="window.openAppointmentModal('${tabId}', '${a.id}')" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button>
+                           <button onclick="window.deleteAppointment('${a.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>`).join('');
             
@@ -475,8 +456,8 @@
                     <div class="flex justify-between items-start p-3 bg-gray-50 rounded-lg">
                         <p class="text-gray-700 whitespace-pre-wrap flex-1">${n.text}</p>
                         <div class="flex items-center space-x-2 ml-2">
-                           <button onclick="openNoteModal('${tabId}', ${n.id})" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button>
-                           <button onclick="deleteNote('${tabId}', ${n.id})" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
+                           <button onclick="window.openNoteModal('${tabId}', '${n.id}')" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button>
+                           <button onclick="window.deleteNote('${tabId}', '${n.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>`).join('');
             
@@ -486,10 +467,10 @@
         function createActionButtonsTemplate(tabId) {
             return `
                 <div class="flex flex-wrap gap-4">
-                    <button onclick="openAppointmentModal('${tabId}')" class="flex-grow sm:flex-grow-0 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center justify-center space-x-2">
+                    <button onclick="window.openAppointmentModal('${tabId}')" class="flex-grow sm:flex-grow-0 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center justify-center space-x-2">
                        <i class="fas fa-calendar-plus"></i> <span>เพิ่มนัดหมาย</span>
                     </button>
-                    <button onclick="openNoteModal('${tabId}')" class="flex-grow sm:flex-grow-0 bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 flex items-center justify-center space-x-2">
+                    <button onclick="window.openNoteModal('${tabId}')" class="flex-grow sm:flex-grow-0 bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 flex items-center justify-center space-x-2">
                        <i class="fas fa-file-alt"></i> <span>เพิ่มข้อมูล</span>
                     </button>
                 </div>`;
@@ -506,8 +487,8 @@
                             <span class="truncate" title="${file.name}">${file.name}</span>
                         </div>
                         <div class="flex items-center space-x-2 shrink-0">
-                           <button onclick="downloadAttachedFile(${file.id}, '${file.name.replace(/'/g, "\\'")}')" class="text-green-500 hover:text-green-700 p-2"><i class="fas fa-download"></i></button>
-                           <button onclick="deleteAttachedFile('${tabId}', ${file.id})" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
+                           <button onclick="window.downloadAttachedFile('${file.url}', '${file.name.replace(/'/g, "\\'")}')" class="text-green-500 hover:text-green-700 p-2"><i class="fas fa-download"></i></button>
+                           <button onclick="window.deleteAttachedFile('${tabId}', '${file.id}', '${file.path}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>`).join('');
 
@@ -518,9 +499,9 @@
                     <div class="mt-2">
                         <label for="file-upload-${tabId}" class="w-full cursor-pointer bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg inline-flex items-center justify-center">
                             <i class="fas fa-upload mr-2"></i>
-                            <span>เลือกไฟล์ PDF เพื่ออัปโหลด...</span>
+                            <span id="file-upload-label-${tabId}">เลือกไฟล์ PDF เพื่ออัปโหลด...</span>
                         </label>
-                        <input id="file-upload-${tabId}" type="file" class="hidden" accept=".pdf" onchange="handleFileUpload(event, '${tabId}')"/>
+                        <input id="file-upload-${tabId}" type="file" class="hidden" accept=".pdf" onchange="window.handleFileUpload(event, '${tabId}')"/>
                     </div>
                 </div>
             `;
@@ -535,7 +516,7 @@
                         <h2 class="text-2xl font-semibold mb-4">ข้อมูลนิติกรรมโครงการ</h2>
                         <div class="max-w-sm">
                             <label for="commonFee" class="form-label">ค่าส่วนกลาง (บาท/เดือน)</label>
-                            <input type="number" id="commonFee" class="form-input" value="${commonFee || ''}" onchange="updateProjectInfo('commonFee', this.value)" placeholder="2000">
+                            <input type="number" id="commonFee" class="form-input" value="${commonFee || ''}" onchange="window.updateProjectInfo('commonFee', this.value)" placeholder="2000">
                         </div>
                     </div>
                     <hr/>
@@ -563,14 +544,14 @@
                     <div>
                         <h2 class="text-2xl font-semibold mb-4">ข้อมูลสินเชื่อ</h2>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                             <div><label for="loanHouse" class="form-label">วงเงินกู้ (ค่าบ้าน)</label><input type="number" id="loanHouse" onchange="updateBankInfo('loanHouse', this.value)" value="${loanHouse || ''}" class="form-input" placeholder="3000000"></div>
-                             <div><label for="loanDecor" class="form-label">วงเงินกู้ (ตกแต่ง)</label><input type="number" id="loanDecor" onchange="updateBankInfo('loanDecor', this.value)" value="${loanDecor || ''}" class="form-input" placeholder="500000"></div>
-                             <div><label for="interest1" class="form-label">ดอกเบี้ยปีที่ 1 (%)</label><input type="number" step="0.01" id="interest1" onchange="updateBankInfo('interest1', this.value)" value="${interest1 || ''}" class="form-input" placeholder="2.5"></div>
-                             <div><label for="interest2" class="form-label">ดอกเบี้ยปีที่ 2 (%)</label><input type="number" step="0.01" id="interest2" onchange="updateBankInfo('interest2', this.value)" value="${interest2 || ''}" class="form-input" placeholder="3.5"></div>
-                             <div><label for="interest3" class="form-label">ดอกเบี้ยปีที่ 3 (%)</label><input type="number" step="0.01" id="interest3" onchange="updateBankInfo('interest3', this.value)" value="${interest3 || ''}" class="form-input" placeholder="4.5"></div>
-                             <div><label for="interest4" class="form-label">ดอกเบี้ยปีที่ 4+ (%)</label><input type="number" step="0.01" id="interest4" onchange="updateBankInfo('interest4', this.value)" value="${interest4 || ''}" class="form-input" placeholder="5.5"></div>
-                             <div><label for="withInsurance" class="form-label">วงเงินรวมประกัน</label><input type="number" id="withInsurance" onchange="updateBankInfo('withInsurance', this.value)" value="${withInsurance || ''}" class="form-input" placeholder="3600000"></div>
-                             <div><label for="monthlyPayment" class="form-label">ยอดผ่อน/เดือน</label><input type="number" id="monthlyPayment" onchange="updateBankInfo('monthlyPayment', this.value)" value="${monthlyPayment || ''}" class="form-input" placeholder="18000"></div>
+                             <div><label for="loanHouse" class="form-label">วงเงินกู้ (ค่าบ้าน)</label><input type="number" id="loanHouse" onchange="window.updateBankInfo('loanHouse', this.value)" value="${loanHouse || ''}" class="form-input" placeholder="3000000"></div>
+                             <div><label for="loanDecor" class="form-label">วงเงินกู้ (ตกแต่ง)</label><input type="number" id="loanDecor" onchange="window.updateBankInfo('loanDecor', this.value)" value="${loanDecor || ''}" class="form-input" placeholder="500000"></div>
+                             <div><label for="interest1" class="form-label">ดอกเบี้ยปีที่ 1 (%)</label><input type="number" step="0.01" id="interest1" onchange="window.updateBankInfo('interest1', this.value)" value="${interest1 || ''}" class="form-input" placeholder="2.5"></div>
+                             <div><label for="interest2" class="form-label">ดอกเบี้ยปีที่ 2 (%)</label><input type="number" step="0.01" id="interest2" onchange="window.updateBankInfo('interest2', this.value)" value="${interest2 || ''}" class="form-input" placeholder="3.5"></div>
+                             <div><label for="interest3" class="form-label">ดอกเบี้ยปีที่ 3 (%)</label><input type="number" step="0.01" id="interest3" onchange="window.updateBankInfo('interest3', this.value)" value="${interest3 || ''}" class="form-input" placeholder="4.5"></div>
+                             <div><label for="interest4" class="form-label">ดอกเบี้ยปีที่ 4+ (%)</label><input type="number" step="0.01" id="interest4" onchange="window.updateBankInfo('interest4', this.value)" value="${interest4 || ''}" class="form-input" placeholder="5.5"></div>
+                             <div><label for="withInsurance" class="form-label">วงเงินรวมประกัน</label><input type="number" id="withInsurance" onchange="window.updateBankInfo('withInsurance', this.value)" value="${withInsurance || ''}" class="form-input" placeholder="3600000"></div>
+                             <div><label for="monthlyPayment" class="form-label">ยอดผ่อน/เดือน</label><input type="number" id="monthlyPayment" onchange="window.updateBankInfo('monthlyPayment', this.value)" value="${monthlyPayment || ''}" class="form-input" placeholder="18000"></div>
                         </div>
                     </div>
                     <hr/>
@@ -591,13 +572,13 @@
         }
 
         function createHomeInspectionTemplate() {
-            const inspectionsHtml = AppState.homeInspections.length === 0
+            const inspectionsHtml = (AppState.homeInspections || []).length === 0
                 ? `<p class="text-center text-gray-500 py-4">ยังไม่มีรายการตรวจ</p>`
                 : AppState.homeInspections.map(insp => `
                     <div class="bg-gray-50 rounded-lg p-4">
                         <div class="flex justify-between items-center mb-2">
                             <h4 class="font-semibold text-lg">การตรวจครั้งที่ ${insp.round}</h4>
-                            <button onclick="deleteInspection(${insp.id})" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
+                            <button onclick="window.deleteInspection('${insp.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
                         </div>
                         <ul class="list-disc pl-5 space-y-1 text-gray-700 whitespace-pre-wrap">${insp.details.split('\n').filter(line => line.trim() !== '').map(line => `<li>${line}</li>`).join('')}</ul>
                     </div>`).join('');
@@ -624,7 +605,7 @@
                     ${createFileAttachmentTemplate('homeInspection')}
                     <hr/>
                     <div class="flex flex-wrap gap-4">
-                        <button onclick="openInspectionModal()" class="flex-grow sm:flex-grow-0 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center justify-center space-x-2">
+                        <button onclick="window.openInspectionModal()" class="flex-grow sm:flex-grow-0 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center justify-center space-x-2">
                            <i class="fas fa-plus"></i> <span>เพิ่มรายการตรวจ</span>
                         </button>
                         ${createActionButtonsTemplate('homeInspection').replace('<div class="flex flex-wrap gap-4">','').replace('</div>','')}
@@ -635,15 +616,13 @@
         // --- CHARTING ---
         function calculateBudgets() {
             const result = {
-                planned: {},
-                actual: {},
-                totalPlanned: 0,
-                totalActual: 0,
-                totalAvailable: (AppState.bankInfo.loanDecor || 0) + (AppState.summaryInfo.additionalBudget || 0),
+                planned: {}, actual: {},
+                totalPlanned: 0, totalActual: 0,
+                totalAvailable: (AppState.bankInfo?.loanDecor || 0) + (AppState.summaryInfo?.additionalBudget || 0),
             };
-            for (const cat in AppState.budgets) {
-                result.planned[cat] = AppState.budgets[cat].wishlist.reduce((sum, item) => sum + item.price, 0);
-                result.actual[cat] = AppState.budgets[cat].purchased.reduce((sum, item) => sum + item.price, 0);
+            for (const cat in (AppState.budgets || {})) {
+                result.planned[cat] = (AppState.budgets[cat].wishlist || []).reduce((sum, item) => sum + item.price, 0);
+                result.actual[cat] = (AppState.budgets[cat].purchased || []).reduce((sum, item) => sum + item.price, 0);
                 result.totalPlanned += result.planned[cat];
                 result.totalActual += result.actual[cat];
             }
@@ -652,89 +631,60 @@
 
         function createCharts(plannedCanvasId, actualCanvasId) {
             const budgetData = calculateBudgets();
-            const categories = Object.keys(AppState.budgets);
+            const categories = Object.keys(AppState.budgets || {});
             const labels = categories.map(c => TAB_CONFIG[c].title);
             const colors = ['#34d399', '#fbbf24', '#60a5fa'];
             
             const plannedRemaining = Math.max(0, budgetData.totalAvailable - budgetData.totalPlanned);
             const actualRemaining = Math.max(0, budgetData.totalAvailable - budgetData.totalActual);
 
-            // Planned Chart
             const plannedCtx = document.getElementById(plannedCanvasId)?.getContext('2d');
             if(plannedCtx) {
                 chartInstances.planned = new Chart(plannedCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: [...labels, 'งบประมาณคงเหลือ'],
-                        datasets: [{
-                            data: [...categories.map(c => budgetData.planned[c]), plannedRemaining],
-                            backgroundColor: [...colors, '#e5e7eb'],
-                        }]
-                    },
+                    type: 'doughnut', data: { labels: [...labels, 'งบประมาณคงเหลือ'], datasets: [{ data: [...categories.map(c => budgetData.planned[c]), plannedRemaining], backgroundColor: [...colors, '#e5e7eb'] }] },
                     options: { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: `งบที่คาดว่าจะใช้ (รวม ${formatCurrency(budgetData.totalPlanned)})` } } }
                 });
             }
 
-            // Actual Chart
             const actualCtx = document.getElementById(actualCanvasId)?.getContext('2d');
             if(actualCtx) {
                 chartInstances.actual = new Chart(actualCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: [...labels, 'งบประมาณคงเหลือ'],
-                        datasets: [{
-                            data: [...categories.map(c => budgetData.actual[c]), actualRemaining],
-                            backgroundColor: [...colors, '#e5e7eb'],
-                        }]
-                    },
+                    type: 'doughnut', data: { labels: [...labels, 'งบประมาณคงเหลือ'], datasets: [{ data: [...categories.map(c => budgetData.actual[c]), actualRemaining], backgroundColor: [...colors, '#e5e7eb'] }] },
                     options: { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: `งบที่ใช้ไปแล้ว (รวม ${formatCurrency(budgetData.totalActual)})` } } }
                 });
             }
         }
         
         // --- LOGIC & EVENT HANDLERS ---
-        const changeTab = (tabId) => {
+        window.changeTab = (tabId) => {
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('tab-active'));
             document.querySelector(`button[onclick="changeTab('${tabId}')"]`).classList.add('tab-active');
             renderContentForTab(tabId);
         };
-
+        
         // Bank/Project/Summary Info
-        const updateBankInfo = (key, value) => { AppState.bankInfo[key] = parseFloat(value) || 0; saveState(); };
-        const updateProjectInfo = (key, value) => { AppState.projectInfo[key] = parseFloat(value) || 0; saveState(); };
-        const updateSummaryInfo = (key, value) => { AppState.summaryInfo[key] = parseFloat(value) || 0; saveState(); renderContentForTab('summary'); };
+        window.updateBankInfo = (key, value) => { AppState.bankInfo[key] = parseFloat(value) || 0; saveStateToFirebase(); };
+        window.updateProjectInfo = (key, value) => { AppState.projectInfo[key] = parseFloat(value) || 0; saveStateToFirebase(); };
+        window.updateSummaryInfo = (key, value) => { AppState.summaryInfo[key] = parseFloat(value) || 0; saveStateToFirebase(); renderContentForTab('summary'); };
 
         // Home Inspection Logic
-        const openInspectionModal = () => {
-            document.getElementById('inspectionForm').reset();
-            openModal('inspectionModal');
-        };
+        window.openInspectionModal = () => { document.getElementById('inspectionForm').reset(); openModal('inspectionModal'); };
         document.getElementById('inspectionForm').addEventListener('submit', e => {
             e.preventDefault();
-            AppState.homeInspections.push({
-                id: Date.now(),
-                round: document.getElementById('inspectionRound').value,
-                details: document.getElementById('inspectionDetails').value,
-            });
-            saveState();
-            renderContentForTab('homeInspection');
+            AppState.homeInspections.push({ id: `insp_${Date.now()}`, round: document.getElementById('inspectionRound').value, details: document.getElementById('inspectionDetails').value });
+            saveStateToFirebase();
             closeModal('inspectionModal');
         });
-        const deleteInspection = (id) => {
-            AppState.homeInspections = AppState.homeInspections.filter(i => i.id !== id);
-            saveState();
-            renderContentForTab('homeInspection');
-        };
+        window.deleteInspection = (id) => { AppState.homeInspections = AppState.homeInspections.filter(i => i.id !== id); saveStateToFirebase(); };
         
         // Budget Item Logic
-        const openBudgetItemModal = (category, list, itemId = null) => {
+        window.openBudgetItemModal = (category, list, itemId = null) => {
             currentModal = { category, list, itemId };
             const form = document.getElementById('budgetItemForm');
             form.reset();
             document.getElementById('budgetItemId').value = '';
             
-            const titleAction = itemId ? 'แก้ไข' : 'เพิ่ม';
-            document.getElementById('budgetItemModalTitle').innerText = `${titleAction}รายการ: ${TAB_CONFIG[category].title}`;
+            document.getElementById('budgetItemModalTitle').innerText = `${itemId ? 'แก้ไข' : 'เพิ่ม'}รายการ: ${TAB_CONFIG[category].title}`;
 
             if(itemId) {
                 const item = AppState.budgets[category][list].find(i => i.id === itemId);
@@ -750,44 +700,34 @@
         document.getElementById('budgetItemForm').addEventListener('submit', e => {
             e.preventDefault();
             const { category, list } = currentModal;
-            const id = parseInt(document.getElementById('budgetItemId').value);
-            const name = document.getElementById('budgetItemName').value;
-            const price = parseFloat(document.getElementById('budgetItemCost').value);
+            const id = document.getElementById('budgetItemId').value;
+            const itemData = { name: document.getElementById('budgetItemName').value, price: parseFloat(document.getElementById('budgetItemCost').value) };
 
-            if(id) { // Edit
+            if(id) {
                 const itemIndex = AppState.budgets[category][list].findIndex(i => i.id === id);
-                if(itemIndex > -1) AppState.budgets[category][list][itemIndex] = { id, name, price };
-            } else { // Add
-                AppState.budgets[category][list].push({ id: Date.now(), name, price });
+                if(itemIndex > -1) AppState.budgets[category][list][itemIndex] = { ...AppState.budgets[category][list][itemIndex], ...itemData };
+            } else {
+                AppState.budgets[category][list].push({ id: `item_${Date.now()}`, ...itemData });
             }
-            saveState();
-            renderContentForTab(category);
+            saveStateToFirebase();
             closeModal('budgetItemModal');
         });
         
-        const deleteBudgetItem = (category, list, itemId) => {
-            AppState.budgets[category][list] = AppState.budgets[category][list].filter(i => i.id !== itemId);
-            saveState();
-            renderContentForTab(category);
-        };
-        
-        const moveBudgetItem = (category, itemId) => {
+        window.deleteBudgetItem = (category, list, itemId) => { AppState.budgets[category][list] = AppState.budgets[category][list].filter(i => i.id !== itemId); saveStateToFirebase(); };
+        window.moveBudgetItem = (category, itemId) => {
             const itemIndex = AppState.budgets[category].wishlist.findIndex(i => i.id === itemId);
             if(itemIndex > -1) {
                 const [item] = AppState.budgets[category].wishlist.splice(itemIndex, 1);
                 AppState.budgets[category].purchased.push(item);
-                saveState();
-                renderContentForTab(category);
+                saveStateToFirebase();
             }
         };
 
         // Appointment Logic
-        const openAppointmentModal = (sourceTab, appointmentId = null) => {
+        window.openAppointmentModal = (sourceTab, appointmentId = null) => {
             currentModal = { sourceTab, itemId: appointmentId };
-            const form = document.getElementById('appointmentForm');
-            form.reset();
+            const form = document.getElementById('appointmentForm'); form.reset();
             document.getElementById('appointmentId').value = '';
-
             if (appointmentId) {
                 const appt = AppState.appointments.find(a => a.id === appointmentId);
                 if (appt) {
@@ -802,39 +742,24 @@
 
         document.getElementById('appointmentForm').addEventListener('submit', e => {
             e.preventDefault();
-            const id = parseInt(document.getElementById('appointmentId').value);
-            const apptData = {
-                title: document.getElementById('appointmentTitle').value,
-                date: document.getElementById('appointmentDate').value,
-                time: document.getElementById('appointmentTime').value,
-                sourceTab: currentModal.sourceTab,
-            };
-
-            if (id) { // Edit
+            const id = document.getElementById('appointmentId').value;
+            const apptData = { title: document.getElementById('appointmentTitle').value, date: document.getElementById('appointmentDate').value, time: document.getElementById('appointmentTime').value, sourceTab: currentModal.sourceTab };
+            if (id) {
                 const apptIndex = AppState.appointments.findIndex(a => a.id === id);
                 if (apptIndex > -1) AppState.appointments[apptIndex] = { ...AppState.appointments[apptIndex], ...apptData };
-            } else { // Add
-                AppState.appointments.push({ ...apptData, id: Date.now() });
+            } else {
+                AppState.appointments.push({ ...apptData, id: `appt_${Date.now()}` });
             }
-            
-            saveState();
-            closeModal('appointmentModal');
-            renderContentForTab(currentTab);
+            saveStateToFirebase(); closeModal('appointmentModal');
         });
 
-        const deleteAppointment = (id) => {
-            AppState.appointments = AppState.appointments.filter(a => a.id !== id);
-            saveState();
-            renderContentForTab(currentTab);
-        };
+        window.deleteAppointment = (id) => { AppState.appointments = AppState.appointments.filter(a => a.id !== id); saveStateToFirebase(); };
         
         // Note Logic
-        const openNoteModal = (sourceTab, noteId = null) => {
+        window.openNoteModal = (sourceTab, noteId = null) => {
             currentModal = { sourceTab, itemId: noteId };
-            const form = document.getElementById('noteForm');
-            form.reset();
+            const form = document.getElementById('noteForm'); form.reset();
             document.getElementById('noteId').value = '';
-
             if (noteId) {
                 const note = AppState.notes[sourceTab].find(n => n.id === noteId);
                 if (note) {
@@ -847,114 +772,141 @@
         
         document.getElementById('noteForm').addEventListener('submit', e => {
             e.preventDefault();
-            const id = parseInt(document.getElementById('noteId').value);
+            const id = document.getElementById('noteId').value;
             const { sourceTab } = currentModal;
-            const noteData = {
-                text: document.getElementById('noteText').value,
-            };
-
-            if (id) { // Edit
+            const noteData = { text: document.getElementById('noteText').value };
+            if (id) {
                  const noteIndex = AppState.notes[sourceTab].findIndex(n => n.id === id);
                  if (noteIndex > -1) AppState.notes[sourceTab][noteIndex] = { ...AppState.notes[sourceTab][noteIndex], ...noteData };
-            } else { // Add
-                 AppState.notes[sourceTab].push({ ...noteData, id: Date.now() });
+            } else {
+                 AppState.notes[sourceTab].push({ ...noteData, id: `note_${Date.now()}` });
             }
-
-            saveState();
-            closeModal('noteModal');
-            renderContentForTab(sourceTab);
+            saveStateToFirebase(); closeModal('noteModal');
         });
 
-        const deleteNote = (sourceTab, noteId) => {
-            AppState.notes[sourceTab] = AppState.notes[sourceTab].filter(n => n.id !== noteId);
-            saveState();
-            renderContentForTab(sourceTab);
-        };
+        window.deleteNote = (sourceTab, noteId) => { AppState.notes[sourceTab] = AppState.notes[sourceTab].filter(n => n.id !== noteId); saveStateToFirebase(); };
 
         // File Logic
-        async function handleFileUpload(event, tabId) {
+        window.handleFileUpload = async (event, tabId) => {
             const file = event.target.files[0];
             if (!file) return;
 
-            const fileData = {
-                id: Date.now(),
-                name: file.name
-            };
+            const uploadLabel = document.getElementById(`file-upload-label-${tabId}`);
+            uploadLabel.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> กำลังอัปโหลด...`;
+            
+            const fileId = `file_${Date.now()}`;
+            const filePath = `artifacts/${appId}/users/${userId}/files/${fileId}_${file.name}`;
+            const fileRef = ref(storage, filePath);
 
             try {
-                await saveFile(fileData.id, file); // Save blob to IndexedDB
+                await uploadBytes(fileRef, file);
+                const downloadURL = await getDownloadURL(fileRef);
+                
+                const fileData = { id: fileId, name: file.name, url: downloadURL, path: filePath };
+
                 if (!AppState.files[tabId]) AppState.files[tabId] = [];
-                AppState.files[tabId].push(fileData); // Save metadata to AppState
-                saveState(); // Save AppState to localStorage
-                renderContentForTab(tabId); // Re-render UI
+                AppState.files[tabId].push(fileData);
+                saveStateToFirebase();
             } catch (error) {
-                console.error("Failed to save file:", error);
+                console.error("Error uploading file:", error);
+                uploadLabel.innerText = "เกิดข้อผิดพลาด! ลองอีกครั้ง";
+            } finally {
+                event.target.value = ''; // Reset file input
             }
-        }
+        };
 
-        async function downloadAttachedFile(fileId, fileName) {
+        window.downloadAttachedFile = (url, fileName) => {
+            const a = document.createElement('a');
+            a.href = url;
+            a.target = '_blank'; // Open in new tab
+            a.download = fileName; // Suggest filename
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
+
+        window.deleteAttachedFile = async (tabId, fileId, filePath) => {
+            if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบไฟล์นี้?')) return;
+            
+            const fileRef = ref(storage, filePath);
             try {
-                const file = await getFile(fileId);
-                if (!file) {
-                    console.error("File not found in database.");
-                    return;
-                }
-
-                const url = URL.createObjectURL(file);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+                await deleteObject(fileRef);
+                AppState.files[tabId] = AppState.files[tabId].filter(f => f.id !== fileId);
+                saveStateToFirebase();
             } catch (error) {
-                console.error("Failed to download file:", error);
+                console.error("Error deleting file:", error);
             }
-        }
-
-        async function deleteAttachedFile(tabId, fileId) {
-            try {
-                await deleteFile(fileId); // Delete from IndexedDB
-                AppState.files[tabId] = AppState.files[tabId].filter(f => f.id !== fileId); // Delete from AppState
-                saveState(); // Save AppState
-                renderContentForTab(tabId); // Re-render
-            } catch (error) {
-                console.error("Failed to delete file:", error);
-            }
-        }
+        };
         
         // --- MODAL CONTROLS ---
-        function openModal(modalId) {
+        window.openModal = (modalId) => {
             const modal = document.getElementById(modalId);
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 modal.querySelector('.modal-content').classList.remove('-translate-y-10');
             }, 10);
-        }
+        };
         
-        function closeModal(modalId) {
+        window.closeModal = (modalId) => {
             const modal = document.getElementById(modalId);
             modal.classList.add('opacity-0');
             modal.querySelector('.modal-content').classList.add('-translate-y-10');
             setTimeout(() => {
                 modal.classList.add('hidden');
-                currentModal = {}; // Reset modal state
+                currentModal = {};
             }, 250);
-        }
-
-        // --- INITIAL RENDER ---
-        window.onload = async () => {
-            try {
-                await initDB();
-            } catch (error) {
-                console.error("Failed to initialize database:", error);
-                // The application will still work, but file attachment will fail.
-            }
-            renderContentForTab('activity');
         };
+
+        // --- INITIALIZATION ---
+        function setupFirestoreListener() {
+            if (unsubscribe) unsubscribe(); // Detach any old listener
+            
+            dataRef = doc(db, `artifacts/${appId}/users/${userId}/data/homeData`);
+
+            unsubscribe = onSnapshot(dataRef, (doc) => {
+                if (doc.exists()) {
+                    AppState = doc.data();
+                } else {
+                    // First time user, create initial data structure
+                    console.log("No data found, creating initial document.");
+                    AppState = getInitialData();
+                    saveStateToFirebase(); // This will create the document
+                }
+                // Ensure all keys from initialData exist to prevent errors from old data structures
+                const initialKeys = Object.keys(getInitialData());
+                for (const key of initialKeys) {
+                    if (!AppState[key]) {
+                        AppState[key] = getInitialData()[key];
+                    }
+                }
+
+                renderContentForTab(currentTab);
+                document.getElementById('loading-overlay').classList.add('opacity-0', 'pointer-events-none');
+            }, (error) => {
+                console.error("Firestore snapshot error:", error);
+            });
+        }
+        
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                document.getElementById('userIdDisplay').innerText = `User ID: ${userId}`;
+                setupFirestoreListener();
+            } else {
+                // Not signed in, handle sign-in process
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Authentication failed:", error);
+                    document.getElementById('loading-overlay').innerText = "การยืนยันตัวตนล้มเหลว โปรดรีเฟรชหน้าจอ";
+                }
+            }
+        });
     </script>
 </body>
 </html>
