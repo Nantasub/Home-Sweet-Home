@@ -76,8 +76,7 @@
     <script type="module">
         // --- Firebase SDK Imports ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // ===================================================================================
         // Firebase Configuration - YOUR KEY IS NOW INCLUDED
@@ -112,72 +111,58 @@
             
             init: function() {
                 ['appointmentForm', 'budgetItemForm', 'inspectionForm', 'noteForm'].forEach(id => document.getElementById(id).addEventListener('submit', e => this.handleFormSubmit(e, id)));
-                if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("...")) { this.showError("กรุณากรอก Firebase configuration ในไฟล์ HTML ก่อน"); return; }
+                if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("...")) { this.showError("Firebase configuration is invalid."); return; }
                 
                 this.loadingTimeout = setTimeout(() => {
-                    this.showError("การเชื่อมต่อหมดเวลา (Timeout)");
+                    this.showError("การเชื่อมต่อหมดเวลา (Timeout). กรุณาตรวจสอบ Firestore Rules.");
                 }, 15000);
 
                 try {
                     const app = initializeApp(firebaseConfig);
-                    const auth = getAuth(app);
                     const db = getFirestore(app);
-                    onAuthStateChanged(auth, async (user) => { 
-                        if (user) { 
-                            this.setupFirestoreListener(db, user.uid); 
-                        } else { 
-                            try {
-                                await signInAnonymously(auth); 
-                            } catch (authError) {
-                                console.error("Anonymous sign-in failed:", authError);
-                                if (authError.code === 'auth/operation-not-allowed' || authError.code === 'auth/configuration-not-found') {
-                                    const projectId = firebaseConfig.projectId;
-                                    const authUrl = `https://console.firebase.google.com/project/${projectId}/authentication/providers`;
-                                    const guide = `
-                                        <div class='text-left text-sm p-2'>
-                                            <p class='font-bold'>ขั้นตอนสุดท้าย: เปิดใช้งาน Anonymous Sign-in</p>
-                                            <ol class='list-decimal list-inside mt-2 space-y-1'>
-                                                <li><a href="${authUrl}" target="_blank" class="text-blue-600 font-bold hover:underline">คลิกที่นี่</a> เพื่อไปที่หน้าตั้งค่า Authentication</li>
-                                                <li>ในหน้ารายการที่เปิดขึ้นมา ให้คลิกที่ 'Anonymous'</li>
-                                                <li>เปิดใช้งาน (Enable) แล้วกด 'Save'</li>
-                                                <li>กลับมาที่หน้านี้แล้วรีเฟรชอีกครั้ง</li>
-                                            </ol>
-                                        </div>
-                                    `;
-                                    this.showError(guide, true);
-                                } else {
-                                    this.showError(`Authentication failed: ${authError.message}`);
-                                }
-                            }
-                        } 
-                    });
+                    this.setupFirestoreListener(db);
                 } catch (e) { this.showError(`Firebase initialization failed: ${e.message}`); }
             },
 
             showError: function(message, isHtml = false) {
                 clearTimeout(this.loadingTimeout);
-                if (isHtml) {
-                    this.elements.authErrorMessage.innerHTML = message;
-                } else {
-                    this.elements.authErrorMessage.textContent = message;
-                }
+                if (isHtml) { this.elements.authErrorMessage.innerHTML = message; } 
+                else { this.elements.authErrorMessage.textContent = message; }
                 this.elements.loadingSpinner.style.display = 'none';
                 this.elements.authErrorDiv.classList.remove('hidden');
             },
             
-            setupFirestoreListener: function(db, userId) {
+            setupFirestoreListener: function(db) {
                 clearTimeout(this.loadingTimeout);
                 if (this.unsubscribe) this.unsubscribe();
-                this.dataRef = doc(db, `homeData/${userId}`);
+                
+                // Simplified path, identical to OPEX app logic
+                this.dataRef = doc(db, "homeData", "sharedDocument");
+
                 this.unsubscribe = onSnapshot(this.dataRef, (doc) => {
-                    this.elements.appStatus.innerText = `ออนไลน์ | User ID: ${userId}`;
+                    this.elements.appStatus.innerText = `ออนไลน์ - ข้อมูลซิงค์อัตโนมัติ`;
                     this.state = doc.exists() ? doc.data() : this.getInitialData();
                     const initialKeys = Object.keys(this.getInitialData());
                     for (const key of initialKeys) { if (typeof this.state[key] === 'undefined') this.state[key] = this.getInitialData()[key]; }
                     this.elements.loadingOverlay.style.display = 'none';
                     if(!doc.exists()) this.saveState();
                     this.render();
-                }, (error) => { this.showError(`Firestore snapshot error: ${error.message}`); });
+                }, (error) => { 
+                     const projectId = firebaseConfig.projectId;
+                     const rulesUrl = `https://console.firebase.google.com/project/${projectId}/firestore/rules`;
+                     const guide = `
+                        <div class='text-left text-sm p-2'>
+                             <p class='font-bold'>ขั้นตอนสุดท้าย: ตั้งค่า Firestore Rules</p>
+                             <ol class='list-decimal list-inside mt-2 space-y-1'>
+                                 <li><a href="${rulesUrl}" target="_blank" class="text-blue-600 font-bold hover:underline">คลิกที่นี่</a> เพื่อไปที่หน้าตั้งค่า Rules</li>
+                                 <li>ลบโค้ดเก่าทิ้งทั้งหมด แล้ววางโค้ดข้างล่างนี้แทน:</li>
+                                 <li class='mt-1'><code class='bg-gray-200 p-1 rounded text-xs'>rules_version = '2';<br>service cloud.firestore {<br>  match /databases/{database}/documents {<br>    match /{document=**} {<br>      allow read, write: if true;<br>    }<br>  }<br>}</code></li>
+                                 <li class='mt-1'>คลิก 'Publish' แล้วรีเฟรชหน้านี้</li>
+                             </ol>
+                         </div>
+                     `;
+                    this.showError(guide, true);
+                });
             },
 
             handleFormSubmit: function(e, formId) {
