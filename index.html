@@ -79,14 +79,15 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        const firebaseConfig = {
+       const firebaseConfig = {
   apiKey: "AIzaSyBvpVOneaHb8pZUAYrHI6D3PLpURMEW-IQ",
   authDomain: "home-sweet-home-7afb2.firebaseapp.com",
   projectId: "home-sweet-home-7afb2",
   storageBucket: "home-sweet-home-7afb2.firebasestorage.app",
   messagingSenderId: "716595539819",
-  appId: "1:716595539819:web:e5b88c1c670d8b0c6f262e"
-};        
+  appId: "1:716595539819:web:770ae623d1d80ed26f262e"
+};
+
         const debounce = (func, delay) => { let timeout; return function(...args) { const context = this; clearTimeout(timeout); timeout = setTimeout(() => func.apply(context, args), delay); }; };
 
         const App = {
