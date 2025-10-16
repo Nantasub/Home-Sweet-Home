@@ -204,13 +204,11 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
         
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const storage = getStorage(app);
         let userId;
         let dataRef;
 
@@ -237,10 +235,6 @@
                 furniture: { wishlist: [], purchased: [] },
             },
             notes: {
-                builtin: [], appliances: [], furniture: [],
-                projectLegalities: [], bankLegalities: [], homeInspection: []
-            },
-            files: {
                 builtin: [], appliances: [], furniture: [],
                 projectLegalities: [], bankLegalities: [], homeInspection: []
             }
@@ -434,8 +428,6 @@
                         </div>
                         <div class="space-y-2">${renderList('purchased', data.purchased)}</div>
                     </div>
-                    <hr/>
-                    ${createFileAttachmentTemplate(category)}
                 </div>`;
         }
         
@@ -481,37 +473,6 @@
                     </button>
                 </div>`;
         }
-        
-        function createFileAttachmentTemplate(tabId) {
-            const files = AppState.files[tabId] || [];
-            const filesHtml = files.length === 0
-                ? `<p class="text-gray-500 text-sm text-center py-2">ไม่มีไฟล์แนบ</p>`
-                : files.map(file => `
-                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <div class="flex items-center space-x-3 truncate">
-                            <i class="fas fa-file-pdf text-red-500"></i>
-                            <span class="truncate" title="${file.name}">${file.name}</span>
-                        </div>
-                        <div class="flex items-center space-x-2 shrink-0">
-                           <button onclick="window.downloadAttachedFile('${file.url}', '${file.name.replace(/'/g, "\\'")}')" class="text-green-500 hover:text-green-700 p-2"><i class="fas fa-download"></i></button>
-                           <button onclick="window.deleteAttachedFile('${tabId}', '${file.id}', '${file.path}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>`).join('');
-
-            return `
-                <div>
-                    <h3 class="text-xl font-semibold mb-3">ไฟล์แนบ (PDF)</h3>
-                    <div class="space-y-2 mb-4">${filesHtml}</div>
-                    <div class="mt-2">
-                        <label for="file-upload-${tabId}" class="w-full cursor-pointer bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg inline-flex items-center justify-center">
-                            <i class="fas fa-upload mr-2"></i>
-                            <span id="file-upload-label-${tabId}">เลือกไฟล์ PDF เพื่ออัปโหลด...</span>
-                        </label>
-                        <input id="file-upload-${tabId}" type="file" class="hidden" accept=".pdf" onchange="window.handleFileUpload(event, '${tabId}')"/>
-                    </div>
-                </div>
-            `;
-        }
 
         function createProjectLegalitiesTemplate() {
             const { commonFee } = AppState.projectInfo;
@@ -535,8 +496,6 @@
                         <h3 class="text-xl font-semibold mb-3">ข้อมูลเพิ่มเติม</h3>
                         <div class="space-y-2">${notesHtml}</div>
                     </div>
-                    <hr/>
-                    ${createFileAttachmentTemplate('projectLegalities')}
                     <hr/>
                     ${createActionButtonsTemplate('projectLegalities')}
                 </div>`;
@@ -570,8 +529,6 @@
                         <h3 class="text-xl font-semibold mb-3">ข้อมูลเพิ่มเติม</h3>
                         <div class="space-y-2">${notesHtml}</div>
                     </div>
-                    <hr/>
-                    ${createFileAttachmentTemplate('bankLegalities')}
                     <hr/>
                     ${createActionButtonsTemplate('bankLegalities')}
                 </div>`;
@@ -607,8 +564,6 @@
                         <h3 class="text-xl font-semibold mb-3">ข้อมูลเพิ่มเติม</h3>
                         <div class="space-y-2">${notesHtml}</div>
                     </div>
-                    <hr/>
-                    ${createFileAttachmentTemplate('homeInspection')}
                     <hr/>
                     <div class="flex flex-wrap gap-4">
                         <button onclick="window.openInspectionModal()" class="flex-grow sm:flex-grow-0 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center justify-center space-x-2">
@@ -791,58 +746,6 @@
         });
 
         window.deleteNote = (sourceTab, noteId) => { AppState.notes[sourceTab] = AppState.notes[sourceTab].filter(n => n.id !== noteId); saveStateToFirebase(); };
-
-        // File Logic
-        window.handleFileUpload = async (event, tabId) => {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const uploadLabel = document.getElementById(`file-upload-label-${tabId}`);
-            uploadLabel.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> กำลังอัปโหลด...`;
-            
-            const fileId = `file_${Date.now()}`;
-            const filePath = `artifacts/${appId}/users/${userId}/files/${fileId}_${file.name}`;
-            const fileRef = ref(storage, filePath);
-
-            try {
-                await uploadBytes(fileRef, file);
-                const downloadURL = await getDownloadURL(fileRef);
-                
-                const fileData = { id: fileId, name: file.name, url: downloadURL, path: filePath };
-
-                if (!AppState.files[tabId]) AppState.files[tabId] = [];
-                AppState.files[tabId].push(fileData);
-                saveStateToFirebase();
-            } catch (error) {
-                console.error("Error uploading file:", error);
-                uploadLabel.innerText = "เกิดข้อผิดพลาด! ลองอีกครั้ง";
-            } finally {
-                event.target.value = ''; // Reset file input
-            }
-        };
-
-        window.downloadAttachedFile = (url, fileName) => {
-            const a = document.createElement('a');
-            a.href = url;
-            a.target = '_blank'; // Open in new tab
-            a.download = fileName; // Suggest filename
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        };
-
-        window.deleteAttachedFile = async (tabId, fileId, filePath) => {
-            if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบไฟล์นี้?')) return;
-            
-            const fileRef = ref(storage, filePath);
-            try {
-                await deleteObject(fileRef);
-                AppState.files[tabId] = AppState.files[tabId].filter(f => f.id !== fileId);
-                saveStateToFirebase();
-            } catch (error) {
-                console.error("Error deleting file:", error);
-            }
-        };
         
         // --- MODAL CONTROLS ---
         window.openModal = (modalId) => {
