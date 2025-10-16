@@ -74,14 +74,14 @@
         <div class="mb-6">
             <div class="border-b border-gray-200 bg-white rounded-t-lg shadow-sm">
                 <nav class="tabs-container -mb-px flex space-x-2 overflow-x-auto p-2" aria-label="Tabs">
-                    <button onclick="changeTab('activity')" class="tab tab-active shrink-0 py-3 px-4 border-b-2 font-medium text-sm rounded-md">ภาพรวม (Activity)</button>
-                    <button onclick="changeTab('summary')" class="tab shrink-0 py-3 px-4 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 rounded-md">สรุปค่าใช้จ่าย</button>
-                    <button onclick="changeTab('builtin')" class="tab shrink-0 py-3 px-4 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 rounded-md">Built-in</button>
-                    <button onclick="changeTab('appliances')" class="tab shrink-0 py-3 px-4 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 rounded-md">เครื่องใช้ไฟฟ้า</button>
-                    <button onclick="changeTab('furniture')" class="tab shrink-0 py-3 px-4 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 rounded-md">เฟอร์นิเจอร์</button>
-                    <button onclick="changeTab('projectLegalities')" class="tab shrink-0 py-3 px-4 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 rounded-md">นิติกรรมโครงการ</button>
-                    <button onclick="changeTab('bankLegalities')" class="tab shrink-0 py-3 px-4 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 rounded-md">นิติกรรมธนาคาร</button>
-                    <button onclick="changeTab('homeInspection')" class="tab shrink-0 py-3 px-4 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 rounded-md">ตรวจรับบ้าน</button>
+                    <button onclick="window.changeTab('activity')" class="tab tab-active shrink-0 py-3 px-4 border-b-2 font-medium text-sm rounded-md">ภาพรวม (Activity)</button>
+                    <button onclick="window.changeTab('summary')" class="tab shrink-0 py-3 px-4 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 rounded-md">สรุปค่าใช้จ่าย</button>
+                    <button onclick="window.changeTab('builtin')" class="tab shrink-0 py-3 px-4 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 rounded-md">Built-in</button>
+                    <button onclick="window.changeTab('appliances')" class="tab shrink-0 py-3 px-4 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 rounded-md">เครื่องใช้ไฟฟ้า</button>
+                    <button onclick="window.changeTab('furniture')" class="tab shrink-0 py-3 px-4 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 rounded-md">เฟอร์นิเจอร์</button>
+                    <button onclick="window.changeTab('projectLegalities')" class="tab shrink-0 py-3 px-4 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 rounded-md">นิติกรรมโครงการ</button>
+                    <button onclick="window.changeTab('bankLegalities')" class="tab shrink-0 py-3 px-4 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 rounded-md">นิติกรรมธนาคาร</button>
+                    <button onclick="window.changeTab('homeInspection')" class="tab shrink-0 py-3 px-4 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 rounded-md">ตรวจรับบ้าน</button>
                 </nav>
             </div>
         </div>
@@ -114,7 +114,7 @@
                     </div>
                 </div>
                 <div class="mt-6 flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('appointmentModal')" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">ยกเลิก</button>
+                    <button type="button" onclick="window.closeModal('appointmentModal')" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">ยกเลิก</button>
                     <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">บันทึก</button>
                 </div>
             </form>
@@ -136,7 +136,7 @@
                     <input id="budgetItemCost" type="number" step="0.01" class="form-input" placeholder="25000" required>
                 </div>
                 <div class="mt-6 flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('budgetItemModal')" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">ยกเลิก</button>
+                    <button type="button" onclick="window.closeModal('budgetItemModal')" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">ยกเลิก</button>
                     <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">บันทึก</button>
                 </div>
             </form>
@@ -157,7 +157,7 @@
                     <textarea id="inspectionDetails" rows="8" class="form-input" placeholder="- สีผนังไม่เรียบ\n- ปลั๊กไฟใช้งานไม่ได้"></textarea>
                 </div>
                 <div class="mt-6 flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('inspectionModal')" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">ยกเลิก</button>
+                    <button type="button" onclick="window.closeModal('inspectionModal')" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">ยกเลิก</button>
                     <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">บันทึก</button>
                 </div>
             </form>
@@ -175,7 +175,7 @@
                     <textarea id="noteText" rows="6" class="form-input" placeholder="บันทึกข้อมูลเพิ่มเติม..."></textarea>
                 </div>
                 <div class="mt-6 flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('noteModal')" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">ยกเลิก</button>
+                    <button type="button" onclick="window.closeModal('noteModal')" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">ยกเลิก</button>
                     <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">บันทึก</button>
                 </div>
             </form>
@@ -184,7 +184,11 @@
 
     <!-- Firebase SDK -->
     <script type="module">
-        // --- DATA & STATE MANAGEMENT ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- GLOBAL STATE & CONFIG ---
         let currentTab = 'activity';
         let currentModal = {
             category: null,
@@ -193,657 +197,697 @@
             sourceTab: null,
         };
         let chartInstances = {};
-        let AppState = {}; // Will be populated from Firebase
-        let unsubscribe; // To detach Firestore listener
+        let AppState = {};
+        let unsubscribe;
+        let isOnlineMode = false;
+        let dataRef;
+        let app, auth, db;
 
-        // --- Firebase Setup ---
-        // These will be provided in the environment
+        // --- ENVIRONMENT CONFIG ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
+        // --- DOM ELEMENTS ---
+        const loadingOverlay = document.getElementById('loading-overlay');
         const loadingSpinner = document.getElementById('loading-spinner');
         const authErrorDiv = document.getElementById('auth-error');
         const authErrorMessage = document.getElementById('auth-error-message');
+        const userIdDisplay = document.getElementById('userIdDisplay');
+        const mainContentEl = document.getElementById('mainContent');
 
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // --- APP CONFIG ---
+        const TAB_CONFIG = {
+            'activity': { title: 'ภาพรวม', type: 'activity' },
+            'summary': { title: 'สรุปค่าใช้จ่าย', type: 'summary' },
+            'builtin': { title: 'Built-in', type: 'budget' },
+            'appliances': { title: 'เครื่องใช้ไฟฟ้า', type: 'budget' },
+            'furniture': { title: 'เฟอร์นิเจอร์', type: 'budget' },
+            'projectLegalities': { title: 'นิติกรรมโครงการ', type: 'project' },
+            'bankLegalities': { title: 'นิติกรรมธนาคาร', type: 'bank' },
+            'homeInspection': { title: 'ตรวจรับบ้าน', type: 'inspection' },
+        };
 
-        if (!firebaseConfigStr || firebaseConfigStr.length < 20) {
-            loadingSpinner.style.display = 'none';
-            authErrorDiv.classList.remove('hidden');
-            authErrorMessage.textContent = 'Firebase configuration is missing or invalid. Cannot initialize the application.';
-        } else {
-            const firebaseConfig = JSON.parse(firebaseConfigStr);
+        const getInitialData = () => ({
+            appointments: [],
+            bankInfo: { loanHouse: 0, loanDecor: 0, interest1: 0, interest2: 0, interest3: 0, interest4: 0, withInsurance: 0, monthlyPayment: 0 },
+            projectInfo: { commonFee: 0 },
+            summaryInfo: { additionalBudget: 0 },
+            homeInspections: [],
+            budgets: {
+                builtin: { wishlist: [], purchased: [] },
+                appliances: { wishlist: [], purchased: [] },
+                furniture: { wishlist: [], purchased: [] },
+            },
+            notes: {
+                builtin: [], appliances: [], furniture: [],
+                projectLegalities: [], bankLegalities: [], homeInspection: []
+            }
+        });
+
+        // --- DATA PERSISTENCE ---
+        const debounce = (func, delay) => {
+            let timeout;
+            return function(...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), delay);
+            };
+        };
+
+        const _saveStateToFirebase_debounced = debounce(async () => {
+            if (dataRef) {
+                try {
+                    await setDoc(dataRef, AppState, { merge: true });
+                } catch (error) {
+                    console.error("Error saving state to Firebase:", error);
+                }
+            }
+        }, 1000);
+        
+        const saveState = () => {
+            if (isOnlineMode) {
+                _saveStateToFirebase_debounced();
+            } else {
+                localStorage.setItem('homeManagerAppState_offline_v1', JSON.stringify(AppState));
+            }
+            // Re-render current tab to reflect changes immediately in UI for some components
+            if (['summary'].includes(currentTab)) {
+                 renderContentForTab(currentTab);
+            }
+        };
+
+        // --- HELPER FUNCTIONS ---
+        const formatCurrency = (num) => (num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const getThaiDate = (dateString) => new Date(dateString).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric'});
+        const hideLoadingOverlay = () => loadingOverlay.classList.add('opacity-0', 'pointer-events-none');
+
+        // --- TEMPLATE GENERATION ---
+        function renderContentForTab(tabId) {
+            if (!AppState || typeof AppState.budgets === 'undefined') return;
+
+            currentTab = tabId;
+            const config = TAB_CONFIG[tabId];
+            let content = '';
+
+            Object.values(chartInstances).forEach(chart => chart.destroy());
+            chartInstances = {};
+
+            switch(config.type) {
+                case 'activity': content = createActivityTemplate(); break;
+                case 'summary': content = createSummaryTemplate(); break;
+                case 'budget': content = createBudgetTemplate(tabId); break;
+                case 'project': content = createProjectLegalitiesTemplate(); break;
+                case 'bank': content = createBankLegalitiesTemplate(); break;
+                case 'inspection': content = createHomeInspectionTemplate(); break;
+            }
+            mainContentEl.innerHTML = content;
+
+            if (config.type === 'activity') createCharts('activityChartPlanned', 'activityChartActual');
+            if (config.type === 'summary') createCharts('summaryChartPlanned', 'summaryChartActual');
+        }
+
+        function createActivityTemplate() {
+            const sortedAppointments = [...(AppState.appointments || [])]
+                .sort((a,b) => new Date(a.date + 'T' + a.time) - new Date(b.date + 'T' + b.time))
+                .filter(a => new Date(a.date) >= new Date(new Date().setDate(new Date().getDate() - 1)));
             
-            // Initialize Firebase
-            const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
-            const db = getFirestore(app);
-            let userId;
-            let dataRef;
+            const appointmentsHtml = sortedAppointments.length === 0
+                ? `<p class="text-center text-gray-500 py-4">ไม่มีนัดหมายเร็วๆ นี้</p>`
+                : sortedAppointments.map(appt => `
+                    <div class="bg-gray-50 rounded-lg p-3 flex items-center space-x-4">
+                        <div class="flex-shrink-0 bg-blue-500 text-white rounded-md p-2 text-center w-16">
+                            <p class="text-xl font-bold">${new Date(appt.date).getDate()}</p>
+                            <p class="text-xs">${new Date(appt.date).toLocaleDateString('th-TH', { month: 'short' })}</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold">${appt.title}</p>
+                            <p class="text-sm text-gray-600">${getThaiDate(appt.date)} - ${appt.time}</p>
+                            <p class="text-xs text-gray-400">จาก: ${TAB_CONFIG[appt.sourceTab]?.title}</p>
+                        </div>
+                    </div>`).join('');
 
-            const TAB_CONFIG = {
-                'activity': { title: 'ภาพรวม', type: 'activity' },
-                'summary': { title: 'สรุปค่าใช้จ่าย', type: 'summary' },
-                'builtin': { title: 'Built-in', type: 'budget' },
-                'appliances': { title: 'เครื่องใช้ไฟฟ้า', type: 'budget' },
-                'furniture': { title: 'เฟอร์นิเจอร์', type: 'budget' },
-                'projectLegalities': { title: 'นิติกรรมโครงการ', type: 'project' },
-                'bankLegalities': { title: 'นิติกรรมธนาคาร', type: 'bank' },
-                'homeInspection': { title: 'ตรวจรับบ้าน', type: 'inspection' },
+            return `
+                <div class="space-y-6">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                         <h2 class="text-2xl font-semibold mb-4">นัดหมายที่จะถึง</h2>
+                         <div class="space-y-3">${appointmentsHtml}</div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h2 class="text-2xl font-semibold mb-4">ภาพรวมค่าใช้จ่าย</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                            <div><canvas id="activityChartPlanned"></canvas></div>
+                            <div><canvas id="activityChartActual"></canvas></div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+        
+        function createSummaryTemplate() {
+            const budgetData = calculateBudgets();
+            
+            return `
+                <div class="bg-white rounded-xl shadow-md p-6 space-y-8">
+                    <div>
+                        <h2 class="text-2xl font-semibold mb-4">สรุปงบประมาณ</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <p class="form-label">งบเงินกู้ (ตกแต่ง)</p>
+                                <p class="text-2xl font-bold text-green-700">${formatCurrency(AppState.bankInfo.loanDecor)}</p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <label for="additionalBudget" class="form-label">งบเพิ่มเติม</label>
+                                <input type="number" id="additionalBudget" onchange="window.updateSummaryInfo('additionalBudget', this.value)" class="form-input text-2xl font-bold text-green-700 bg-transparent border-0 p-0" value="${AppState.summaryInfo.additionalBudget || ''}" placeholder="0.00">
+                            </div>
+                            <div class="bg-blue-100 p-4 rounded-lg">
+                                <p class="form-label">งบประมาณทั้งหมด</p>
+                                <p class="text-2xl font-bold text-blue-700">${formatCurrency(budgetData.totalAvailable)}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <hr/>
+                    <div>
+                        <h2 class="text-2xl font-semibold mb-4">สรุปค่าใช้จ่าย</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                           <div class="space-y-3">
+                                <h3 class="text-lg font-semibold">งบที่คาดว่าจะใช้ (Wishlist)</h3>
+                                <div class="bg-orange-50 p-4 rounded-lg flex justify-between items-center">
+                                    <span class="font-bold">รวมทั้งหมด</span>
+                                    <span class="text-xl font-bold text-orange-700">${formatCurrency(budgetData.totalPlanned)}</span>
+                                </div>
+                                ${Object.keys(AppState.budgets).map(cat => `
+                                <div class="p-3 rounded-lg flex justify-between items-center bg-gray-50">
+                                    <span>${TAB_CONFIG[cat].title}</span>
+                                    <span class="font-semibold">${formatCurrency(budgetData.planned[cat])}</span>
+                                </div>`).join('')}
+                           </div>
+                           <div class="space-y-3">
+                                <h3 class="text-lg font-semibold">งบที่ใช้ไปแล้ว (Purchased)</h3>
+                                <div class="bg-red-50 p-4 rounded-lg flex justify-between items-center">
+                                    <span class="font-bold">รวมทั้งหมด</span>
+                                    <span class="text-xl font-bold text-red-700">${formatCurrency(budgetData.totalActual)}</span>
+                                </div>
+                                ${Object.keys(AppState.budgets).map(cat => `
+                                <div class="p-3 rounded-lg flex justify-between items-center bg-gray-50">
+                                    <span>${TAB_CONFIG[cat].title}</span>
+                                    <span class="font-semibold">${formatCurrency(budgetData.actual[cat])}</span>
+                                </div>`).join('')}
+                           </div>
+                        </div>
+                    </div>
+                     <hr/>
+                    <div>
+                        <h2 class="text-2xl font-semibold mb-4">กราฟสรุป</h2>
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                            <div><canvas id="summaryChartPlanned"></canvas></div>
+                            <div><canvas id="summaryChartActual"></canvas></div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function createBudgetTemplate(category) {
+            const data = AppState.budgets[category];
+            const renderList = (listType, items) => {
+                if (!items || items.length === 0) return `<div class="text-center text-gray-500 py-4 border rounded-lg">ไม่มีรายการ</div>`;
+                return items.map(item => `
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <div>
+                            <p>${item.name}</p>
+                            <p class="text-sm text-gray-600">${formatCurrency(item.price)} บาท</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                           ${listType === 'wishlist' ? `<button onclick="window.moveBudgetItem('${category}', '${item.id}')" class="text-green-500 hover:text-green-700 p-2"><i class="fas fa-check"></i></button>` : ''}
+                           <button onclick="window.openBudgetItemModal('${category}', '${listType}', '${item.id}')" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button>
+                           <button onclick="window.deleteBudgetItem('${category}', '${listType}', '${item.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
             };
 
-            const getInitialData = () => ({
-                appointments: [],
-                bankInfo: { loanHouse: 0, loanDecor: 0, interest1: 0, interest2: 0, interest3: 0, interest4: 0, withInsurance: 0, monthlyPayment: 0 },
-                projectInfo: { commonFee: 0 },
-                summaryInfo: { additionalBudget: 0 },
-                homeInspections: [],
-                budgets: {
-                    builtin: { wishlist: [], purchased: [] },
-                    appliances: { wishlist: [], purchased: [] },
-                    furniture: { wishlist: [], purchased: [] },
-                },
-                notes: {
-                    builtin: [], appliances: [], furniture: [],
-                    projectLegalities: [], bankLegalities: [], homeInspection: []
-                }
-            });
-
-            // Debounce function to limit Firestore writes
-            const debounce = (func, delay) => {
-                let timeout;
-                return function(...args) {
-                    const context = this;
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => func.apply(context, args), delay);
-                };
-            };
-
-            const saveStateToFirebase = debounce(async () => {
-                if (dataRef) {
-                    try {
-                        await setDoc(dataRef, AppState, { merge: true });
-                    } catch (error) {
-                        console.error("Error saving state to Firebase:", error);
-                    }
-                }
-            }, 1000); // Save 1 second after the last change
-
-            // --- HELPER FUNCTIONS ---
-            const formatCurrency = (num) => (num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            const getThaiDate = (dateString) => new Date(dateString).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric'});
-
-            // --- TEMPLATE GENERATION ---
-            const mainContentEl = document.getElementById('mainContent');
-
-            function renderContentForTab(tabId) {
-                if (!AppState.budgets) return; // Guard against rendering before data is loaded
-
-                currentTab = tabId;
-                const config = TAB_CONFIG[tabId];
-                let content = '';
-
-                // Destroy previous charts
-                Object.values(chartInstances).forEach(chart => chart.destroy());
-                chartInstances = {};
-
-                switch(config.type) {
-                    case 'activity': content = createActivityTemplate(); break;
-                    case 'summary': content = createSummaryTemplate(); break;
-                    case 'budget': content = createBudgetTemplate(tabId); break;
-                    case 'project': content = createProjectLegalitiesTemplate(); break;
-                    case 'bank': content = createBankLegalitiesTemplate(); break;
-                    case 'inspection': content = createHomeInspectionTemplate(); break;
-                }
-                mainContentEl.innerHTML = content;
-
-                // Re-initialize charts if needed
-                if (config.type === 'activity') createCharts('activityChartPlanned', 'activityChartActual');
-                if (config.type === 'summary') createCharts('summaryChartPlanned', 'summaryChartActual');
-            }
-
-            function createActivityTemplate() {
-                const sortedAppointments = [...(AppState.appointments || [])]
-                    .sort((a,b) => new Date(a.date + 'T' + a.time) - new Date(b.date + 'T' + b.time))
-                    .filter(a => new Date(a.date) >= new Date(new Date().setDate(new Date().getDate() - 1)));
-                
-                const appointmentsHtml = sortedAppointments.length === 0
-                    ? `<p class="text-center text-gray-500 py-4">ไม่มีนัดหมายเร็วๆ นี้</p>`
-                    : sortedAppointments.map(appt => `
-                        <div class="bg-gray-50 rounded-lg p-3 flex items-center space-x-4">
-                            <div class="flex-shrink-0 bg-blue-500 text-white rounded-md p-2 text-center w-16">
-                                <p class="text-xl font-bold">${new Date(appt.date).getDate()}</p>
-                                <p class="text-xs">${new Date(appt.date).toLocaleDateString('th-TH', { month: 'short' })}</p>
-                            </div>
-                            <div>
-                                <p class="font-semibold">${appt.title}</p>
-                                <p class="text-sm text-gray-600">${getThaiDate(appt.date)} - ${appt.time}</p>
-                                <p class="text-xs text-gray-400">จาก: ${TAB_CONFIG[appt.sourceTab]?.title}</p>
-                            </div>
-                        </div>`).join('');
-
-                return `
-                    <div class="space-y-6">
-                        <div class="bg-white rounded-xl shadow-md p-6">
-                             <h2 class="text-2xl font-semibold mb-4">นัดหมายที่จะถึง</h2>
-                             <div class="space-y-3">${appointmentsHtml}</div>
+            return `
+                <div class="bg-white rounded-xl shadow-md p-6 space-y-6">
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold">รายการที่อยากได้ (Wishlist)</h3>
+                            <button onclick="window.openBudgetItemModal('${category}', 'wishlist')" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm font-semibold">+ เพิ่ม</button>
                         </div>
-                        <div class="bg-white rounded-xl shadow-md p-6">
-                            <h2 class="text-2xl font-semibold mb-4">ภาพรวมค่าใช้จ่าย</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                                <div><canvas id="activityChartPlanned"></canvas></div>
-                                <div><canvas id="activityChartActual"></canvas></div>
-                            </div>
+                        <div class="space-y-2">${renderList('wishlist', data.wishlist)}</div>
+                    </div>
+                    <hr/>
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold">รายการที่ซื้อแล้ว</h3>
+                            <button onclick="window.openBudgetItemModal('${category}', 'purchased')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 text-sm font-semibold">+ เพิ่ม</button>
                         </div>
-                    </div>`;
-            }
+                        <div class="space-y-2">${renderList('purchased', data.purchased)}</div>
+                    </div>
+                </div>`;
+        }
+        
+        function createInfoTemplate(tabId) {
+            const appointments = (AppState.appointments || []).filter(a => a.sourceTab === tabId);
+            const appointmentsHtml = appointments.length === 0
+                ? `<p class="text-gray-500 text-sm">ไม่มีนัดหมาย</p>`
+                : appointments.map(a => `
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <div>
+                            <p class="font-semibold">${a.title}</p>
+                            <p class="text-sm text-gray-600">${getThaiDate(a.date)} - ${a.time}</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                           <button onclick="window.openAppointmentModal('${tabId}', '${a.id}')" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button>
+                           <button onclick="window.deleteAppointment('${a.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`).join('');
             
-            function createSummaryTemplate() {
-                const budgetData = calculateBudgets();
-                
-                return `
-                    <div class="bg-white rounded-xl shadow-md p-6 space-y-8">
-                        <div>
-                            <h2 class="text-2xl font-semibold mb-4">สรุปงบประมาณ</h2>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div class="bg-green-50 p-4 rounded-lg">
-                                    <p class="form-label">งบเงินกู้ (ตกแต่ง)</p>
-                                    <p class="text-2xl font-bold text-green-700">${formatCurrency(AppState.bankInfo.loanDecor)}</p>
-                                </div>
-                                <div class="bg-green-50 p-4 rounded-lg">
-                                    <label for="additionalBudget" class="form-label">งบเพิ่มเติม</label>
-                                    <input type="number" id="additionalBudget" onchange="window.updateSummaryInfo('additionalBudget', this.value)" class="form-input text-2xl font-bold text-green-700 bg-transparent border-0 p-0" value="${AppState.summaryInfo.additionalBudget || ''}" placeholder="0.00">
-                                </div>
-                                <div class="bg-blue-100 p-4 rounded-lg">
-                                    <p class="form-label">งบประมาณทั้งหมด</p>
-                                    <p class="text-2xl font-bold text-blue-700">${formatCurrency(budgetData.totalAvailable)}</p>
-                                </div>
-                            </div>
+            const notes = AppState.notes[tabId] || [];
+            const notesHtml = notes.length === 0
+                ? `<p class="text-gray-500 text-sm">ไม่มีข้อมูลเพิ่มเติม</p>`
+                : notes.map(n => `
+                    <div class="flex justify-between items-start p-3 bg-gray-50 rounded-lg">
+                        <p class="text-gray-700 whitespace-pre-wrap flex-1">${n.text}</p>
+                        <div class="flex items-center space-x-2 ml-2">
+                           <button onclick="window.openNoteModal('${tabId}', '${n.id}')" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button>
+                           <button onclick="window.deleteNote('${tabId}', '${n.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
                         </div>
-                        <hr/>
-                        <div>
-                            <h2 class="text-2xl font-semibold mb-4">สรุปค่าใช้จ่าย</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                               <div class="space-y-3">
-                                    <h3 class="text-lg font-semibold">งบที่คาดว่าจะใช้ (Wishlist)</h3>
-                                    <div class="bg-orange-50 p-4 rounded-lg flex justify-between items-center">
-                                        <span class="font-bold">รวมทั้งหมด</span>
-                                        <span class="text-xl font-bold text-orange-700">${formatCurrency(budgetData.totalPlanned)}</span>
-                                    </div>
-                                    ${Object.keys(AppState.budgets).map(cat => `
-                                    <div class="p-3 rounded-lg flex justify-between items-center bg-gray-50">
-                                        <span>${TAB_CONFIG[cat].title}</span>
-                                        <span class="font-semibold">${formatCurrency(budgetData.planned[cat])}</span>
-                                    </div>`).join('')}
-                               </div>
-                               <div class="space-y-3">
-                                    <h3 class="text-lg font-semibold">งบที่ใช้ไปแล้ว (Purchased)</h3>
-                                    <div class="bg-red-50 p-4 rounded-lg flex justify-between items-center">
-                                        <span class="font-bold">รวมทั้งหมด</span>
-                                        <span class="text-xl font-bold text-red-700">${formatCurrency(budgetData.totalActual)}</span>
-                                    </div>
-                                    ${Object.keys(AppState.budgets).map(cat => `
-                                    <div class="p-3 rounded-lg flex justify-between items-center bg-gray-50">
-                                        <span>${TAB_CONFIG[cat].title}</span>
-                                        <span class="font-semibold">${formatCurrency(budgetData.actual[cat])}</span>
-                                    </div>`).join('')}
-                               </div>
-                            </div>
-                        </div>
-                         <hr/>
-                        <div>
-                            <h2 class="text-2xl font-semibold mb-4">กราฟสรุป</h2>
-                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                                <div><canvas id="summaryChartPlanned"></canvas></div>
-                                <div><canvas id="summaryChartActual"></canvas></div>
-                            </div>
-                        </div>
-                    </div>`;
-            }
-
-            function createBudgetTemplate(category) {
-                const data = AppState.budgets[category];
-                const renderList = (listType, items) => {
-                    if (!items || items.length === 0) return `<div class="text-center text-gray-500 py-4 border rounded-lg">ไม่มีรายการ</div>`;
-                    return items.map(item => `
-                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                            <div>
-                                <p>${item.name}</p>
-                                <p class="text-sm text-gray-600">${formatCurrency(item.price)} บาท</p>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                               ${listType === 'wishlist' ? `<button onclick="window.moveBudgetItem('${category}', '${item.id}')" class="text-green-500 hover:text-green-700 p-2"><i class="fas fa-check"></i></button>` : ''}
-                               <button onclick="window.openBudgetItemModal('${category}', '${listType}', '${item.id}')" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button>
-                               <button onclick="window.deleteBudgetItem('${category}', '${listType}', '${item.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </div>
-                    `).join('');
-                };
-
-                return `
-                    <div class="bg-white rounded-xl shadow-md p-6 space-y-6">
-                        <div>
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-xl font-semibold">รายการที่อยากได้ (Wishlist)</h3>
-                                <button onclick="window.openBudgetItemModal('${category}', 'wishlist')" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm font-semibold">+ เพิ่ม</button>
-                            </div>
-                            <div class="space-y-2">${renderList('wishlist', data.wishlist)}</div>
-                        </div>
-                        <hr/>
-                        <div>
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="text-xl font-semibold">รายการที่ซื้อแล้ว</h3>
-                                <button onclick="window.openBudgetItemModal('${category}', 'purchased')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 text-sm font-semibold">+ เพิ่ม</button>
-                            </div>
-                            <div class="space-y-2">${renderList('purchased', data.purchased)}</div>
-                        </div>
-                    </div>`;
-            }
+                    </div>`).join('');
             
-            function createInfoTemplate(tabId) {
-                const appointments = (AppState.appointments || []).filter(a => a.sourceTab === tabId);
-                const appointmentsHtml = appointments.length === 0
-                    ? `<p class="text-gray-500 text-sm">ไม่มีนัดหมาย</p>`
-                    : appointments.map(a => `
-                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                            <div>
-                                <p class="font-semibold">${a.title}</p>
-                                <p class="text-sm text-gray-600">${getThaiDate(a.date)} - ${a.time}</p>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                               <button onclick="window.openAppointmentModal('${tabId}', '${a.id}')" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button>
-                               <button onclick="window.deleteAppointment('${a.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </div>`).join('');
-                
-                const notes = AppState.notes[tabId] || [];
-                const notesHtml = notes.length === 0
-                    ? `<p class="text-gray-500 text-sm">ไม่มีข้อมูลเพิ่มเติม</p>`
-                    : notes.map(n => `
-                        <div class="flex justify-between items-start p-3 bg-gray-50 rounded-lg">
-                            <p class="text-gray-700 whitespace-pre-wrap flex-1">${n.text}</p>
-                            <div class="flex items-center space-x-2 ml-2">
-                               <button onclick="window.openNoteModal('${tabId}', '${n.id}')" class="text-blue-500 hover:text-blue-700 p-2"><i class="fas fa-pen"></i></button>
-                               <button onclick="window.deleteNote('${tabId}', '${n.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
-                            </div>
-                        </div>`).join('');
-                
-                return { appointmentsHtml, notesHtml };
-            }
+            return { appointmentsHtml, notesHtml };
+        }
 
-            function createActionButtonsTemplate(tabId) {
-                return `
+        function createActionButtonsTemplate(tabId) {
+            return `
+                <div class="flex flex-wrap gap-4">
+                    <button onclick="window.openAppointmentModal('${tabId}')" class="flex-grow sm:flex-grow-0 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center justify-center space-x-2">
+                       <i class="fas fa-calendar-plus"></i> <span>เพิ่มนัดหมาย</span>
+                    </button>
+                    <button onclick="window.openNoteModal('${tabId}')" class="flex-grow sm:flex-grow-0 bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 flex items-center justify-center space-x-2">
+                       <i class="fas fa-file-alt"></i> <span>เพิ่มข้อมูล</span>
+                    </button>
+                </div>`;
+        }
+
+        function createProjectLegalitiesTemplate() {
+            const { commonFee } = AppState.projectInfo;
+            const { appointmentsHtml, notesHtml } = createInfoTemplate('projectLegalities');
+            return `
+                <div class="bg-white rounded-xl shadow-md p-6 space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-semibold mb-4">ข้อมูลนิติกรรมโครงการ</h2>
+                        <div class="max-w-sm">
+                            <label for="commonFee" class="form-label">ค่าส่วนกลาง (บาท/เดือน)</label>
+                            <input type="number" id="commonFee" class="form-input" value="${commonFee || ''}" onchange="window.updateProjectInfo('commonFee', this.value)" placeholder="2000">
+                        </div>
+                    </div>
+                    <hr/>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-3">นัดหมาย</h3>
+                        <div class="space-y-2">${appointmentsHtml}</div>
+                    </div>
+                    <hr/>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-3">ข้อมูลเพิ่มเติม</h3>
+                        <div class="space-y-2">${notesHtml}</div>
+                    </div>
+                    <hr/>
+                    ${createActionButtonsTemplate('projectLegalities')}
+                </div>`;
+        }
+        
+        function createBankLegalitiesTemplate() {
+            const { loanHouse, loanDecor, interest1, interest2, interest3, interest4, withInsurance, monthlyPayment } = AppState.bankInfo;
+            const { appointmentsHtml, notesHtml } = createInfoTemplate('bankLegalities');
+            return `
+                <div class="bg-white rounded-xl shadow-md p-6 space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-semibold mb-4">ข้อมูลสินเชื่อ</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                             <div><label for="loanHouse" class="form-label">วงเงินกู้ (ค่าบ้าน)</label><input type="number" id="loanHouse" onchange="window.updateBankInfo('loanHouse', this.value)" value="${loanHouse || ''}" class="form-input" placeholder="3000000"></div>
+                             <div><label for="loanDecor" class="form-label">วงเงินกู้ (ตกแต่ง)</label><input type="number" id="loanDecor" onchange="window.updateBankInfo('loanDecor', this.value)" value="${loanDecor || ''}" class="form-input" placeholder="500000"></div>
+                             <div><label for="interest1" class="form-label">ดอกเบี้ยปีที่ 1 (%)</label><input type="number" step="0.01" id="interest1" onchange="window.updateBankInfo('interest1', this.value)" value="${interest1 || ''}" class="form-input" placeholder="2.5"></div>
+                             <div><label for="interest2" class="form-label">ดอกเบี้ยปีที่ 2 (%)</label><input type="number" step="0.01" id="interest2" onchange="window.updateBankInfo('interest2', this.value)" value="${interest2 || ''}" class="form-input" placeholder="3.5"></div>
+                             <div><label for="interest3" class="form-label">ดอกเบี้ยปีที่ 3 (%)</label><input type="number" step="0.01" id="interest3" onchange="window.updateBankInfo('interest3', this.value)" value="${interest3 || ''}" class="form-input" placeholder="4.5"></div>
+                             <div><label for="interest4" class="form-label">ดอกเบี้ยปีที่ 4+ (%)</label><input type="number" step="0.01" id="interest4" onchange="window.updateBankInfo('interest4', this.value)" value="${interest4 || ''}" class="form-input" placeholder="5.5"></div>
+                             <div><label for="withInsurance" class="form-label">วงเงินรวมประกัน</label><input type="number" id="withInsurance" onchange="window.updateBankInfo('withInsurance', this.value)" value="${withInsurance || ''}" class="form-input" placeholder="3600000"></div>
+                             <div><label for="monthlyPayment" class="form-label">ยอดผ่อน/เดือน</label><input type="number" id="monthlyPayment" onchange="window.updateBankInfo('monthlyPayment', this.value)" value="${monthlyPayment || ''}" class="form-input" placeholder="18000"></div>
+                        </div>
+                    </div>
+                    <hr/>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-3">นัดหมาย</h3>
+                        <div class="space-y-2">${appointmentsHtml}</div>
+                    </div>
+                    <hr/>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-3">ข้อมูลเพิ่มเติม</h3>
+                        <div class="space-y-2">${notesHtml}</div>
+                    </div>
+                    <hr/>
+                    ${createActionButtonsTemplate('bankLegalities')}
+                </div>`;
+        }
+
+        function createHomeInspectionTemplate() {
+            const inspectionsHtml = (AppState.homeInspections || []).length === 0
+                ? `<p class="text-center text-gray-500 py-4">ยังไม่มีรายการตรวจ</p>`
+                : AppState.homeInspections.map(insp => `
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="font-semibold text-lg">การตรวจครั้งที่ ${insp.round}</h4>
+                            <button onclick="window.deleteInspection('${insp.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
+                        </div>
+                        <ul class="list-disc pl-5 space-y-1 text-gray-700 whitespace-pre-wrap">${insp.details.split('\n').filter(line => line.trim() !== '').map(line => `<li>${line}</li>`).join('')}</ul>
+                    </div>`).join('');
+            
+            const { appointmentsHtml, notesHtml } = createInfoTemplate('homeInspection');
+
+            return `
+                <div class="bg-white rounded-xl shadow-md p-6 space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-semibold">รายการตรวจรับบ้าน</h2>
+                    </div>
+                    <div class="space-y-4">${inspectionsHtml}</div>
+                    <hr/>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-3">นัดหมาย</h3>
+                        <div class="space-y-2">${appointmentsHtml}</div>
+                    </div>
+                    <hr/>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-3">ข้อมูลเพิ่มเติม</h3>
+                        <div class="space-y-2">${notesHtml}</div>
+                    </div>
+                    <hr/>
                     <div class="flex flex-wrap gap-4">
-                        <button onclick="window.openAppointmentModal('${tabId}')" class="flex-grow sm:flex-grow-0 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center justify-center space-x-2">
-                           <i class="fas fa-calendar-plus"></i> <span>เพิ่มนัดหมาย</span>
+                        <button onclick="window.openInspectionModal()" class="flex-grow sm:flex-grow-0 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center justify-center space-x-2">
+                           <i class="fas fa-plus"></i> <span>เพิ่มรายการตรวจ</span>
                         </button>
-                        <button onclick="window.openNoteModal('${tabId}')" class="flex-grow sm:flex-grow-0 bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 flex items-center justify-center space-x-2">
-                           <i class="fas fa-file-alt"></i> <span>เพิ่มข้อมูล</span>
-                        </button>
-                    </div>`;
+                        ${createActionButtonsTemplate('homeInspection').replace('<div class="flex flex-wrap gap-4">','').replace('</div>','')}
+                    </div>
+                </div>`;
+        }
+
+        // --- CHARTING ---
+        function calculateBudgets() {
+            const result = {
+                planned: {}, actual: {},
+                totalPlanned: 0, totalActual: 0,
+                totalAvailable: (AppState.bankInfo?.loanDecor || 0) + (AppState.summaryInfo?.additionalBudget || 0),
+            };
+            for (const cat in (AppState.budgets || {})) {
+                result.planned[cat] = (AppState.budgets[cat].wishlist || []).reduce((sum, item) => sum + item.price, 0);
+                result.actual[cat] = (AppState.budgets[cat].purchased || []).reduce((sum, item) => sum + item.price, 0);
+                result.totalPlanned += result.planned[cat];
+                result.totalActual += result.actual[cat];
             }
+            return result;
+        }
 
-            function createProjectLegalitiesTemplate() {
-                const { commonFee } = AppState.projectInfo;
-                const { appointmentsHtml, notesHtml } = createInfoTemplate('projectLegalities');
-                return `
-                    <div class="bg-white rounded-xl shadow-md p-6 space-y-6">
-                        <div>
-                            <h2 class="text-2xl font-semibold mb-4">ข้อมูลนิติกรรมโครงการ</h2>
-                            <div class="max-w-sm">
-                                <label for="commonFee" class="form-label">ค่าส่วนกลาง (บาท/เดือน)</label>
-                                <input type="number" id="commonFee" class="form-input" value="${commonFee || ''}" onchange="window.updateProjectInfo('commonFee', this.value)" placeholder="2000">
-                            </div>
-                        </div>
-                        <hr/>
-                        <div>
-                            <h3 class="text-xl font-semibold mb-3">นัดหมาย</h3>
-                            <div class="space-y-2">${appointmentsHtml}</div>
-                        </div>
-                        <hr/>
-                        <div>
-                            <h3 class="text-xl font-semibold mb-3">ข้อมูลเพิ่มเติม</h3>
-                            <div class="space-y-2">${notesHtml}</div>
-                        </div>
-                        <hr/>
-                        ${createActionButtonsTemplate('projectLegalities')}
-                    </div>`;
-            }
+        function createCharts(plannedCanvasId, actualCanvasId) {
+            const budgetData = calculateBudgets();
+            const categories = Object.keys(AppState.budgets || {});
+            const labels = categories.map(c => TAB_CONFIG[c].title);
+            const colors = ['#34d399', '#fbbf24', '#60a5fa'];
             
-            function createBankLegalitiesTemplate() {
-                const { loanHouse, loanDecor, interest1, interest2, interest3, interest4, withInsurance, monthlyPayment } = AppState.bankInfo;
-                const { appointmentsHtml, notesHtml } = createInfoTemplate('bankLegalities');
-                return `
-                    <div class="bg-white rounded-xl shadow-md p-6 space-y-6">
-                        <div>
-                            <h2 class="text-2xl font-semibold mb-4">ข้อมูลสินเชื่อ</h2>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                 <div><label for="loanHouse" class="form-label">วงเงินกู้ (ค่าบ้าน)</label><input type="number" id="loanHouse" onchange="window.updateBankInfo('loanHouse', this.value)" value="${loanHouse || ''}" class="form-input" placeholder="3000000"></div>
-                                 <div><label for="loanDecor" class="form-label">วงเงินกู้ (ตกแต่ง)</label><input type="number" id="loanDecor" onchange="window.updateBankInfo('loanDecor', this.value)" value="${loanDecor || ''}" class="form-input" placeholder="500000"></div>
-                                 <div><label for="interest1" class="form-label">ดอกเบี้ยปีที่ 1 (%)</label><input type="number" step="0.01" id="interest1" onchange="window.updateBankInfo('interest1', this.value)" value="${interest1 || ''}" class="form-input" placeholder="2.5"></div>
-                                 <div><label for="interest2" class="form-label">ดอกเบี้ยปีที่ 2 (%)</label><input type="number" step="0.01" id="interest2" onchange="window.updateBankInfo('interest2', this.value)" value="${interest2 || ''}" class="form-input" placeholder="3.5"></div>
-                                 <div><label for="interest3" class="form-label">ดอกเบี้ยปีที่ 3 (%)</label><input type="number" step="0.01" id="interest3" onchange="window.updateBankInfo('interest3', this.value)" value="${interest3 || ''}" class="form-input" placeholder="4.5"></div>
-                                 <div><label for="interest4" class="form-label">ดอกเบี้ยปีที่ 4+ (%)</label><input type="number" step="0.01" id="interest4" onchange="window.updateBankInfo('interest4', this.value)" value="${interest4 || ''}" class="form-input" placeholder="5.5"></div>
-                                 <div><label for="withInsurance" class="form-label">วงเงินรวมประกัน</label><input type="number" id="withInsurance" onchange="window.updateBankInfo('withInsurance', this.value)" value="${withInsurance || ''}" class="form-input" placeholder="3600000"></div>
-                                 <div><label for="monthlyPayment" class="form-label">ยอดผ่อน/เดือน</label><input type="number" id="monthlyPayment" onchange="window.updateBankInfo('monthlyPayment', this.value)" value="${monthlyPayment || ''}" class="form-input" placeholder="18000"></div>
-                            </div>
-                        </div>
-                        <hr/>
-                        <div>
-                            <h3 class="text-xl font-semibold mb-3">นัดหมาย</h3>
-                            <div class="space-y-2">${appointmentsHtml}</div>
-                        </div>
-                        <hr/>
-                        <div>
-                            <h3 class="text-xl font-semibold mb-3">ข้อมูลเพิ่มเติม</h3>
-                            <div class="space-y-2">${notesHtml}</div>
-                        </div>
-                        <hr/>
-                        ${createActionButtonsTemplate('bankLegalities')}
-                    </div>`;
-            }
+            const plannedRemaining = Math.max(0, budgetData.totalAvailable - budgetData.totalPlanned);
+            const actualRemaining = Math.max(0, budgetData.totalAvailable - budgetData.totalActual);
 
-            function createHomeInspectionTemplate() {
-                const inspectionsHtml = (AppState.homeInspections || []).length === 0
-                    ? `<p class="text-center text-gray-500 py-4">ยังไม่มีรายการตรวจ</p>`
-                    : AppState.homeInspections.map(insp => `
-                        <div class="bg-gray-50 rounded-lg p-4">
-                            <div class="flex justify-between items-center mb-2">
-                                <h4 class="font-semibold text-lg">การตรวจครั้งที่ ${insp.round}</h4>
-                                <button onclick="window.deleteInspection('${insp.id}')" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-trash"></i></button>
-                            </div>
-                            <ul class="list-disc pl-5 space-y-1 text-gray-700 whitespace-pre-wrap">${insp.details.split('\n').filter(line => line.trim() !== '').map(line => `<li>${line}</li>`).join('')}</ul>
-                        </div>`).join('');
-                
-                const { appointmentsHtml, notesHtml } = createInfoTemplate('homeInspection');
-
-                return `
-                    <div class="bg-white rounded-xl shadow-md p-6 space-y-6">
-                        <div>
-                            <h2 class="text-2xl font-semibold">รายการตรวจรับบ้าน</h2>
-                        </div>
-                        <div class="space-y-4">${inspectionsHtml}</div>
-                        <hr/>
-                        <div>
-                            <h3 class="text-xl font-semibold mb-3">นัดหมาย</h3>
-                            <div class="space-y-2">${appointmentsHtml}</div>
-                        </div>
-                        <hr/>
-                        <div>
-                            <h3 class="text-xl font-semibold mb-3">ข้อมูลเพิ่มเติม</h3>
-                            <div class="space-y-2">${notesHtml}</div>
-                        </div>
-                        <hr/>
-                        <div class="flex flex-wrap gap-4">
-                            <button onclick="window.openInspectionModal()" class="flex-grow sm:flex-grow-0 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center justify-center space-x-2">
-                               <i class="fas fa-plus"></i> <span>เพิ่มรายการตรวจ</span>
-                            </button>
-                            ${createActionButtonsTemplate('homeInspection').replace('<div class="flex flex-wrap gap-4">','').replace('</div>','')}
-                        </div>
-                    </div>`;
-            }
-
-            // --- CHARTING ---
-            function calculateBudgets() {
-                const result = {
-                    planned: {}, actual: {},
-                    totalPlanned: 0, totalActual: 0,
-                    totalAvailable: (AppState.bankInfo?.loanDecor || 0) + (AppState.summaryInfo?.additionalBudget || 0),
-                };
-                for (const cat in (AppState.budgets || {})) {
-                    result.planned[cat] = (AppState.budgets[cat].wishlist || []).reduce((sum, item) => sum + item.price, 0);
-                    result.actual[cat] = (AppState.budgets[cat].purchased || []).reduce((sum, item) => sum + item.price, 0);
-                    result.totalPlanned += result.planned[cat];
-                    result.totalActual += result.actual[cat];
-                }
-                return result;
-            }
-
-            function createCharts(plannedCanvasId, actualCanvasId) {
-                const budgetData = calculateBudgets();
-                const categories = Object.keys(AppState.budgets || {});
-                const labels = categories.map(c => TAB_CONFIG[c].title);
-                const colors = ['#34d399', '#fbbf24', '#60a5fa'];
-                
-                const plannedRemaining = Math.max(0, budgetData.totalAvailable - budgetData.totalPlanned);
-                const actualRemaining = Math.max(0, budgetData.totalAvailable - budgetData.totalActual);
-
-                const plannedCtx = document.getElementById(plannedCanvasId)?.getContext('2d');
-                if(plannedCtx) {
-                    chartInstances.planned = new Chart(plannedCtx, {
-                        type: 'doughnut', data: { labels: [...labels, 'งบประมาณคงเหลือ'], datasets: [{ data: [...categories.map(c => budgetData.planned[c]), plannedRemaining], backgroundColor: [...colors, '#e5e7eb'] }] },
-                        options: { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: `งบที่คาดว่าจะใช้ (รวม ${formatCurrency(budgetData.totalPlanned)})` } } }
-                    });
-                }
-
-                const actualCtx = document.getElementById(actualCanvasId)?.getContext('2d');
-                if(actualCtx) {
-                    chartInstances.actual = new Chart(actualCtx, {
-                        type: 'doughnut', data: { labels: [...labels, 'งบประมาณคงเหลือ'], datasets: [{ data: [...categories.map(c => budgetData.actual[c]), actualRemaining], backgroundColor: [...colors, '#e5e7eb'] }] },
-                        options: { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: `งบที่ใช้ไปแล้ว (รวม ${formatCurrency(budgetData.totalActual)})` } } }
-                    });
-                }
-            }
-            
-            // --- LOGIC & EVENT HANDLERS ---
-            window.changeTab = (tabId) => {
-                document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('tab-active'));
-                document.querySelector(`button[onclick="changeTab('${tabId}')"]`).classList.add('tab-active');
-                renderContentForTab(tabId);
-            };
-            
-            // Bank/Project/Summary Info
-            window.updateBankInfo = (key, value) => { AppState.bankInfo[key] = parseFloat(value) || 0; saveStateToFirebase(); };
-            window.updateProjectInfo = (key, value) => { AppState.projectInfo[key] = parseFloat(value) || 0; saveStateToFirebase(); };
-            window.updateSummaryInfo = (key, value) => { AppState.summaryInfo[key] = parseFloat(value) || 0; saveStateToFirebase(); renderContentForTab('summary'); };
-
-            // Home Inspection Logic
-            window.openInspectionModal = () => { document.getElementById('inspectionForm').reset(); openModal('inspectionModal'); };
-            document.getElementById('inspectionForm').addEventListener('submit', e => {
-                e.preventDefault();
-                AppState.homeInspections.push({ id: `insp_${Date.now()}`, round: document.getElementById('inspectionRound').value, details: document.getElementById('inspectionDetails').value });
-                saveStateToFirebase();
-                closeModal('inspectionModal');
-            });
-            window.deleteInspection = (id) => { AppState.homeInspections = AppState.homeInspections.filter(i => i.id !== id); saveStateToFirebase(); };
-            
-            // Budget Item Logic
-            window.openBudgetItemModal = (category, list, itemId = null) => {
-                currentModal = { category, list, itemId };
-                const form = document.getElementById('budgetItemForm');
-                form.reset();
-                document.getElementById('budgetItemId').value = '';
-                
-                document.getElementById('budgetItemModalTitle').innerText = `${itemId ? 'แก้ไข' : 'เพิ่ม'}รายการ: ${TAB_CONFIG[category].title}`;
-
-                if(itemId) {
-                    const item = AppState.budgets[category][list].find(i => i.id === itemId);
-                    if(item) {
-                        document.getElementById('budgetItemId').value = item.id;
-                        document.getElementById('budgetItemName').value = item.name;
-                        document.getElementById('budgetItemCost').value = item.price;
-                    }
-                }
-                openModal('budgetItemModal');
-            };
-
-            document.getElementById('budgetItemForm').addEventListener('submit', e => {
-                e.preventDefault();
-                const { category, list } = currentModal;
-                const id = document.getElementById('budgetItemId').value;
-                const itemData = { name: document.getElementById('budgetItemName').value, price: parseFloat(document.getElementById('budgetItemCost').value) };
-
-                if(id) {
-                    const itemIndex = AppState.budgets[category][list].findIndex(i => i.id === id);
-                    if(itemIndex > -1) AppState.budgets[category][list][itemIndex] = { ...AppState.budgets[category][list][itemIndex], ...itemData };
-                } else {
-                    AppState.budgets[category][list].push({ id: `item_${Date.now()}`, ...itemData });
-                }
-                saveStateToFirebase();
-                closeModal('budgetItemModal');
-            });
-            
-            window.deleteBudgetItem = (category, list, itemId) => { AppState.budgets[category][list] = AppState.budgets[category][list].filter(i => i.id !== itemId); saveStateToFirebase(); };
-            window.moveBudgetItem = (category, itemId) => {
-                const itemIndex = AppState.budgets[category].wishlist.findIndex(i => i.id === itemId);
-                if(itemIndex > -1) {
-                    const [item] = AppState.budgets[category].wishlist.splice(itemIndex, 1);
-                    AppState.budgets[category].purchased.push(item);
-                    saveStateToFirebase();
-                }
-            };
-
-            // Appointment Logic
-            window.openAppointmentModal = (sourceTab, appointmentId = null) => {
-                currentModal = { sourceTab, itemId: appointmentId };
-                const form = document.getElementById('appointmentForm'); form.reset();
-                document.getElementById('appointmentId').value = '';
-                if (appointmentId) {
-                    const appt = AppState.appointments.find(a => a.id === appointmentId);
-                    if (appt) {
-                        document.getElementById('appointmentId').value = appt.id;
-                        document.getElementById('appointmentTitle').value = appt.title;
-                        document.getElementById('appointmentDate').value = appt.date;
-                        document.getElementById('appointmentTime').value = appt.time;
-                    }
-                }
-                openModal('appointmentModal');
-            };
-
-            document.getElementById('appointmentForm').addEventListener('submit', e => {
-                e.preventDefault();
-                const id = document.getElementById('appointmentId').value;
-                const apptData = { title: document.getElementById('appointmentTitle').value, date: document.getElementById('appointmentDate').value, time: document.getElementById('appointmentTime').value, sourceTab: currentModal.sourceTab };
-                if (id) {
-                    const apptIndex = AppState.appointments.findIndex(a => a.id === id);
-                    if (apptIndex > -1) AppState.appointments[apptIndex] = { ...AppState.appointments[apptIndex], ...apptData };
-                } else {
-                    AppState.appointments.push({ ...apptData, id: `appt_${Date.now()}` });
-                }
-                saveStateToFirebase(); closeModal('appointmentModal');
-            });
-
-            window.deleteAppointment = (id) => { AppState.appointments = AppState.appointments.filter(a => a.id !== id); saveStateToFirebase(); };
-            
-            // Note Logic
-            window.openNoteModal = (sourceTab, noteId = null) => {
-                currentModal = { sourceTab, itemId: noteId };
-                const form = document.getElementById('noteForm'); form.reset();
-                document.getElementById('noteId').value = '';
-                if (noteId) {
-                    const note = AppState.notes[sourceTab].find(n => n.id === noteId);
-                    if (note) {
-                        document.getElementById('noteId').value = note.id;
-                        document.getElementById('noteText').value = note.text;
-                    }
-                }
-                openModal('noteModal');
-            };
-            
-            document.getElementById('noteForm').addEventListener('submit', e => {
-                e.preventDefault();
-                const id = document.getElementById('noteId').value;
-                const { sourceTab } = currentModal;
-                const noteData = { text: document.getElementById('noteText').value };
-                if (id) {
-                     const noteIndex = AppState.notes[sourceTab].findIndex(n => n.id === id);
-                     if (noteIndex > -1) AppState.notes[sourceTab][noteIndex] = { ...AppState.notes[sourceTab][noteIndex], ...noteData };
-                } else {
-                     AppState.notes[sourceTab].push({ ...noteData, id: `note_${Date.now()}` });
-                }
-                saveStateToFirebase(); closeModal('noteModal');
-            });
-
-            window.deleteNote = (sourceTab, noteId) => { AppState.notes[sourceTab] = AppState.notes[sourceTab].filter(n => n.id !== noteId); saveStateToFirebase(); };
-            
-            // --- MODAL CONTROLS ---
-            window.openModal = (modalId) => {
-                const modal = document.getElementById(modalId);
-                modal.classList.remove('hidden');
-                setTimeout(() => {
-                    modal.classList.remove('opacity-0');
-                    modal.querySelector('.modal-content').classList.remove('-translate-y-10');
-                }, 10);
-            };
-            
-            window.closeModal = (modalId) => {
-                const modal = document.getElementById(modalId);
-                modal.classList.add('opacity-0');
-                modal.querySelector('.modal-content').classList.add('-translate-y-10');
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                    currentModal = {};
-                }, 250);
-            };
-
-            // --- INITIALIZATION ---
-            function setupFirestoreListener() {
-                if (unsubscribe) unsubscribe(); // Detach any old listener
-                
-                dataRef = doc(db, `artifacts/${appId}/users/${userId}/data/homeData`);
-
-                unsubscribe = onSnapshot(dataRef, (doc) => {
-                    if (doc.exists()) {
-                        AppState = doc.data();
-                    } else {
-                        // First time user, create initial data structure
-                        console.log("No data found, creating initial document.");
-                        AppState = getInitialData();
-                        saveStateToFirebase(); // This will create the document
-                    }
-                    // Ensure all keys from initialData exist to prevent errors from old data structures
-                    const initialKeys = Object.keys(getInitialData());
-                    for (const key of initialKeys) {
-                        if (!AppState[key]) {
-                            AppState[key] = getInitialData()[key];
-                        }
-                    }
-
-                    renderContentForTab(currentTab);
-                    document.getElementById('loading-overlay').classList.add('opacity-0', 'pointer-events-none');
-                }, (error) => {
-                    console.error("Firestore snapshot error:", error);
+            const plannedCtx = document.getElementById(plannedCanvasId)?.getContext('2d');
+            if(plannedCtx) {
+                chartInstances.planned = new Chart(plannedCtx, {
+                    type: 'doughnut', data: { labels: [...labels, 'งบประมาณคงเหลือ'], datasets: [{ data: [...categories.map(c => budgetData.planned[c]), plannedRemaining], backgroundColor: [...colors, '#e5e7eb'] }] },
+                    options: { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: `งบที่คาดว่าจะใช้ (รวม ${formatCurrency(budgetData.totalPlanned)})` } } }
                 });
             }
-            
-            async function retrySignIn() {
-                const spinner = document.getElementById('loading-spinner');
-                const errorDiv = document.getElementById('auth-error');
-                
-                spinner.style.display = 'block';
-                errorDiv.classList.add('hidden');
 
-                try {
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                    // onAuthStateChanged will detect the new user state and proceed
-                } catch (error) {
-                    console.error("Authentication failed on retry:", error);
-                    spinner.style.display = 'none';
-                    errorDiv.classList.remove('hidden');
-                    authErrorMessage.textContent = error.message;
+            const actualCtx = document.getElementById(actualCanvasId)?.getContext('2d');
+            if(actualCtx) {
+                chartInstances.actual = new Chart(actualCtx, {
+                    type: 'doughnut', data: { labels: [...labels, 'งบประมาณคงเหลือ'], datasets: [{ data: [...categories.map(c => budgetData.actual[c]), actualRemaining], backgroundColor: [...colors, '#e5e7eb'] }] },
+                    options: { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: `งบที่ใช้ไปแล้ว (รวม ${formatCurrency(budgetData.totalActual)})` } } }
+                });
+            }
+        }
+        
+        // --- LOGIC & EVENT HANDLERS (ATTACHED TO WINDOW) ---
+        window.changeTab = (tabId) => {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('tab-active'));
+            document.querySelector(`button[onclick="window.changeTab('${tabId}')"]`).classList.add('tab-active');
+            renderContentForTab(tabId);
+        };
+        
+        window.updateBankInfo = (key, value) => { AppState.bankInfo[key] = parseFloat(value) || 0; saveState(); };
+        window.updateProjectInfo = (key, value) => { AppState.projectInfo[key] = parseFloat(value) || 0; saveState(); };
+        window.updateSummaryInfo = (key, value) => { AppState.summaryInfo[key] = parseFloat(value) || 0; saveState(); };
+
+        window.openInspectionModal = () => { document.getElementById('inspectionForm').reset(); window.openModal('inspectionModal'); };
+        document.getElementById('inspectionForm').addEventListener('submit', e => {
+            e.preventDefault();
+            if(!AppState.homeInspections) AppState.homeInspections = [];
+            AppState.homeInspections.push({ id: `insp_${Date.now()}`, round: document.getElementById('inspectionRound').value, details: document.getElementById('inspectionDetails').value });
+            saveState();
+            window.closeModal('inspectionModal');
+            renderContentForTab('homeInspection');
+        });
+        window.deleteInspection = (id) => { AppState.homeInspections = AppState.homeInspections.filter(i => i.id !== id); saveState(); renderContentForTab('homeInspection');};
+        
+        window.openBudgetItemModal = (category, list, itemId = null) => {
+            currentModal = { category, list, itemId };
+            const form = document.getElementById('budgetItemForm');
+            form.reset();
+            document.getElementById('budgetItemId').value = '';
+            
+            document.getElementById('budgetItemModalTitle').innerText = `${itemId ? 'แก้ไข' : 'เพิ่ม'}รายการ: ${TAB_CONFIG[category].title}`;
+
+            if(itemId) {
+                const item = AppState.budgets[category][list].find(i => i.id === itemId);
+                if(item) {
+                    document.getElementById('budgetItemId').value = item.id;
+                    document.getElementById('budgetItemName').value = item.name;
+                    document.getElementById('budgetItemCost').value = item.price;
                 }
             }
-            window.retrySignIn = retrySignIn;
-            
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                    document.getElementById('userIdDisplay').innerText = `User ID: ${userId}`;
-                    setupFirestoreListener();
-                } else {
-                    // Not signed in, handle sign-in process
-                    await retrySignIn();
+            window.openModal('budgetItemModal');
+        };
+
+        document.getElementById('budgetItemForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const { category, list } = currentModal;
+            const id = document.getElementById('budgetItemId').value;
+            const itemData = { name: document.getElementById('budgetItemName').value, price: parseFloat(document.getElementById('budgetItemCost').value) };
+
+            if(id) {
+                const itemIndex = AppState.budgets[category][list].findIndex(i => i.id === id);
+                if(itemIndex > -1) AppState.budgets[category][list][itemIndex] = { ...AppState.budgets[category][list][itemIndex], ...itemData };
+            } else {
+                AppState.budgets[category][list].push({ id: `item_${Date.now()}`, ...itemData });
+            }
+            saveState();
+            window.closeModal('budgetItemModal');
+            renderContentForTab(category);
+        });
+        
+        window.deleteBudgetItem = (category, list, itemId) => { AppState.budgets[category][list] = AppState.budgets[category][list].filter(i => i.id !== itemId); saveState(); renderContentForTab(category);};
+        window.moveBudgetItem = (category, itemId) => {
+            const itemIndex = AppState.budgets[category].wishlist.findIndex(i => i.id === itemId);
+            if(itemIndex > -1) {
+                const [item] = AppState.budgets[category].wishlist.splice(itemIndex, 1);
+                if(!AppState.budgets[category].purchased) AppState.budgets[category].purchased = [];
+                AppState.budgets[category].purchased.push(item);
+                saveState();
+                renderContentForTab(category);
+            }
+        };
+
+        window.openAppointmentModal = (sourceTab, appointmentId = null) => {
+            currentModal = { sourceTab, itemId: appointmentId };
+            const form = document.getElementById('appointmentForm'); form.reset();
+            document.getElementById('appointmentId').value = '';
+            if (appointmentId) {
+                const appt = AppState.appointments.find(a => a.id === appointmentId);
+                if (appt) {
+                    document.getElementById('appointmentId').value = appt.id;
+                    document.getElementById('appointmentTitle').value = appt.title;
+                    document.getElementById('appointmentDate').value = appt.date;
+                    document.getElementById('appointmentTime').value = appt.time;
                 }
+            }
+            window.openModal('appointmentModal');
+        };
+
+        document.getElementById('appointmentForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const id = document.getElementById('appointmentId').value;
+            const apptData = { title: document.getElementById('appointmentTitle').value, date: document.getElementById('appointmentDate').value, time: document.getElementById('appointmentTime').value, sourceTab: currentModal.sourceTab };
+            if(!AppState.appointments) AppState.appointments = [];
+            if (id) {
+                const apptIndex = AppState.appointments.findIndex(a => a.id === id);
+                if (apptIndex > -1) AppState.appointments[apptIndex] = { ...AppState.appointments[apptIndex], ...apptData };
+            } else {
+                AppState.appointments.push({ ...apptData, id: `appt_${Date.now()}` });
+            }
+            saveState(); 
+            window.closeModal('appointmentModal');
+            renderContentForTab(currentTab);
+        });
+
+        window.deleteAppointment = (id) => { AppState.appointments = AppState.appointments.filter(a => a.id !== id); saveState(); renderContentForTab(currentTab); };
+        
+        window.openNoteModal = (sourceTab, noteId = null) => {
+            currentModal = { sourceTab, itemId: noteId };
+            const form = document.getElementById('noteForm'); form.reset();
+            document.getElementById('noteId').value = '';
+            if (noteId) {
+                const note = AppState.notes[sourceTab].find(n => n.id === noteId);
+                if (note) {
+                    document.getElementById('noteId').value = note.id;
+                    document.getElementById('noteText').value = note.text;
+                }
+            }
+            window.openModal('noteModal');
+        };
+        
+        document.getElementById('noteForm').addEventListener('submit', e => {
+            e.preventDefault();
+            const id = document.getElementById('noteId').value;
+            const { sourceTab } = currentModal;
+            const noteData = { text: document.getElementById('noteText').value };
+            if(!AppState.notes[sourceTab]) AppState.notes[sourceTab] = [];
+            if (id) {
+                 const noteIndex = AppState.notes[sourceTab].findIndex(n => n.id === id);
+                 if (noteIndex > -1) AppState.notes[sourceTab][noteIndex] = { ...AppState.notes[sourceTab][noteIndex], ...noteData };
+            } else {
+                 AppState.notes[sourceTab].push({ ...noteData, id: `note_${Date.now()}` });
+            }
+            saveState(); 
+            window.closeModal('noteModal');
+            renderContentForTab(sourceTab);
+        });
+
+        window.deleteNote = (sourceTab, noteId) => { AppState.notes[sourceTab] = AppState.notes[sourceTab].filter(n => n.id !== noteId); saveState(); renderContentForTab(sourceTab); };
+        
+        window.openModal = (modalId) => {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.modal-content').classList.remove('-translate-y-10');
+            }, 10);
+        };
+        
+        window.closeModal = (modalId) => {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('opacity-0');
+            modal.querySelector('.modal-content').classList.add('-translate-y-10');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                currentModal = {};
+            }, 250);
+        };
+
+        // --- INITIALIZATION ---
+        function initializeOfflineMode() {
+            isOnlineMode = false;
+            userIdDisplay.innerHTML = '<i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i> โหมดออฟไลน์: ข้อมูลถูกบันทึกในเครื่องนี้เท่านั้น';
+            const savedState = localStorage.getItem('homeManagerAppState_offline_v1');
+            AppState = savedState ? JSON.parse(savedState) : getInitialData();
+            
+            // Ensure data structure is up to date
+            const initialKeys = Object.keys(getInitialData());
+            for (const key of initialKeys) {
+                if (typeof AppState[key] === 'undefined') {
+                    AppState[key] = getInitialData()[key];
+                }
+            }
+
+            hideLoadingOverlay();
+            renderContentForTab('activity');
+        }
+
+        function setupFirestoreListener(userId) {
+            if (unsubscribe) unsubscribe();
+            
+            dataRef = doc(db, `artifacts/${appId}/users/${userId}/data/homeData`);
+
+            unsubscribe = onSnapshot(dataRef, (doc) => {
+                isOnlineMode = true;
+                userIdDisplay.innerText = `โหมดออนไลน์ | User ID: ${userId}`;
+
+                if (doc.exists()) {
+                    AppState = doc.data();
+                } else {
+                    console.log("No data found, creating initial document.");
+                    AppState = getInitialData();
+                    saveState();
+                }
+                
+                const initialKeys = Object.keys(getInitialData());
+                for (const key of initialKeys) {
+                    if (typeof AppState[key] === 'undefined') {
+                        AppState[key] = getInitialData()[key];
+                    }
+                }
+
+                hideLoadingOverlay();
+                renderContentForTab(currentTab);
+            }, (error) => {
+                console.error("Firestore snapshot error:", error);
+                authErrorMessage.textContent = `Firestore error: ${error.message}`;
+                loadingSpinner.style.display = 'none';
+                authErrorDiv.classList.remove('hidden');
             });
         }
+        
+        async function startAuthProcess() {
+            loadingSpinner.style.display = 'block';
+            authErrorDiv.classList.add('hidden');
+
+            try {
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        setupFirestoreListener(user.uid);
+                    } else {
+                        try {
+                             if (initialAuthToken) {
+                                await signInWithCustomToken(auth, initialAuthToken);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        } catch (authError) {
+                            console.error("Authentication failed:", authError);
+                            initializeOfflineMode(); // Fallback to offline if sign-in fails
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Firebase initialization failed:", e);
+                initializeOfflineMode();
+            }
+        }
+        window.retrySignIn = startAuthProcess;
+
+        function initializeAppAndAuth() {
+            if (!firebaseConfigStr || firebaseConfigStr.length < 20) {
+                console.warn("Firebase config not found. Starting in offline mode.");
+                initializeOfflineMode();
+                return;
+            }
+
+            try {
+                const firebaseConfig = JSON.parse(firebaseConfigStr);
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                startAuthProcess(); // Start the auth process after initialization
+            } catch (e) {
+                console.error("Firebase initialization failed:", e);
+                initializeOfflineMode();
+            }
+        }
+
+        initializeAppAndAuth();
+
     </script>
 </body>
 </html>
